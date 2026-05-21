@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 연봉협상 전략 도우미</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #64748b;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -1px rgba(0,0,0,.06);
+      --claude-c: #f59e0b; --claude-bg: #fffbeb; --claude-bd: #fde68a; --claude-t: #92400e;
+      --gpt-c: #10b981;   --gpt-bg: #ecfdf5;   --gpt-bd: #a7f3d0;   --gpt-t: #065f46;
+      --gemini-c: #3b82f6; --gemini-bg: #eff6ff; --gemini-bd: #bfdbfe; --gemini-t: #1e40af;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      color: #fff; padding: 20px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: var(--shadow-md); gap: 16px;
+    }
+    header h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -.025em; }
+    header p  { font-size: .8rem; color: #94a3b8; margin-top: 3px; }
+    .api-status { display: flex; gap: 6px; flex-shrink: 0; }
+    .badge {
+      display: flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px; font-size: .72rem; font-weight: 600;
+      background: rgba(255,255,255,.08); color: #94a3b8;
+    }
+    .badge.on { background: rgba(16,185,129,.18); color: #34d399; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+    /* ── Layout ── */
+    .main { max-width: 1380px; margin: 0 auto; padding: 24px 28px; }
+
+    /* ── Profile Card ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow);
+    }
+    .profile-card { padding: 20px 24px; margin-bottom: 20px; }
+    .profile-card h2 { font-size: .95rem; font-weight: 700; margin-bottom: 14px; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+    .fg { display: flex; flex-direction: column; gap: 4px; }
+    .fg label { font-size: .7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    .fg input, .fg select {
+      padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px;
+      font-size: .875rem; color: var(--text); background: var(--surface); outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .fg input:focus, .fg select:focus {
+      border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex; gap: 4px; margin-bottom: 18px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 4px; box-shadow: var(--shadow);
+    }
+    .tab-btn {
+      flex: 1; padding: 9px 14px; border: none; border-radius: 8px;
+      font-size: .875rem; font-weight: 600; cursor: pointer;
+      background: transparent; color: var(--muted); transition: all .15s;
+    }
+    .tab-btn.active { background: #1e293b; color: #fff; box-shadow: var(--shadow); }
+    .tab-btn:hover:not(.active) { background: var(--bg); color: var(--text); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* ── Action bar ── */
+    .action-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px; gap: 10px; flex-wrap: wrap;
+    }
+    .action-bar p { font-size: .82rem; color: var(--muted); }
+    .btn-row { display: flex; gap: 8px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 18px; border: none; border-radius: 8px;
+      font-size: .875rem; font-weight: 600; cursor: pointer; transition: all .15s;
+    }
+    .btn-primary  { background: #1e293b; color: #fff; }
+    .btn-primary:hover { background: #334155; }
+    .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+    .btn-outline  { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .btn-outline:hover { background: var(--bg); }
+    .btn-purple   { background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #fff; }
+    .btn-purple:hover { opacity: .88; }
+    .btn-purple:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ── AI columns ── */
+    .ai-cols { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+    @media (max-width: 900px) { .ai-cols { grid-template-columns: 1fr; } }
+
+    .ai-card { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .ai-head {
+      padding: 12px 14px; display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .ai-card.claude .ai-head { background: var(--claude-bg); border-color: var(--claude-bd); }
+    .ai-card.gpt    .ai-head { background: var(--gpt-bg);    border-color: var(--gpt-bd);    }
+    .ai-card.gemini .ai-head { background: var(--gemini-bg); border-color: var(--gemini-bd); }
+
+    .ai-ico {
+      width: 30px; height: 30px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center; font-size: .95rem;
+    }
+    .claude .ai-ico { background: var(--claude-c); }
+    .gpt    .ai-ico { background: var(--gpt-c); }
+    .gemini .ai-ico { background: var(--gemini-c); }
+
+    .ai-label { font-weight: 700; font-size: .875rem; }
+    .claude .ai-label { color: var(--claude-t); }
+    .gpt    .ai-label { color: var(--gpt-t); }
+    .gemini .ai-label { color: var(--gemini-t); }
+    .ai-sub { font-size: .7rem; margin-left: auto; color: var(--muted); }
+
+    .ai-body { padding: 16px; min-height: 180px; background: var(--surface); }
+
+    /* placeholder / loading */
+    .placeholder, .loading {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 36px 16px; gap: 8px; color: var(--muted); font-size: .82rem; text-align: center;
+    }
+    .ph-ico { font-size: 1.8rem; opacity: .3; }
+    .spin {
+      width: 22px; height: 22px; border: 2px solid var(--border);
+      border-top-color: #3b82f6; border-radius: 50%;
+      animation: spin .75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* markdown output */
+    .md { font-size: .85rem; line-height: 1.75; color: var(--text); }
+    .md h1,.md h2,.md h3 { font-size: .88rem; font-weight: 700; margin: 12px 0 5px; }
+    .md h2:first-child, .md h3:first-child { margin-top: 0; }
+    .md p { margin-bottom: 7px; }
+    .md ul,.md ol { padding-left: 18px; margin-bottom: 7px; }
+    .md li { margin-bottom: 3px; }
+    .md strong { font-weight: 700; }
+    .md code { background: var(--bg); padding: 1px 5px; border-radius: 4px; font-size: .78rem; }
+    .md hr { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+
+    /* synthesis card */
+    .synthesis {
+      background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+      border: 1px solid #c4b5fd; border-radius: var(--radius);
+      padding: 18px; margin-top: 14px; box-shadow: var(--shadow);
+    }
+    .synthesis h3 {
+      font-size: .875rem; font-weight: 700; color: #5b21b6;
+      margin-bottom: 10px; display: flex; align-items: center; gap: 7px;
+    }
+
+    /* error */
+    .err {
+      color: #ef4444; font-size: .82rem; padding: 10px 12px;
+      background: #fef2f2; border-radius: 8px; border: 1px solid #fecaca;
+    }
+
+    /* ── Simulation tab ── */
+    .sim-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px; gap: 12px; flex-wrap: wrap;
+    }
+    .sim-top p { font-size: .82rem; color: var(--muted); }
+    .ai-pick { display: flex; gap: 6px; }
+    .pick-btn {
+      padding: 7px 14px; border-radius: 8px; border: 2px solid var(--border);
+      background: var(--surface); font-size: .82rem; font-weight: 700;
+      cursor: pointer; transition: all .15s; color: var(--muted);
+    }
+    .pick-btn.on[data-ai="claude"] { border-color: var(--claude-c); background: var(--claude-bg); color: var(--claude-t); }
+    .pick-btn.on[data-ai="gpt"]    { border-color: var(--gpt-c);    background: var(--gpt-bg);    color: var(--gpt-t); }
+    .pick-btn.on[data-ai="gemini"] { border-color: var(--gemini-c); background: var(--gemini-bg); color: var(--gemini-t); }
+
+    .chat-wrap {
+      display: flex; flex-direction: column; height: 520px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+    }
+    .chat-msgs {
+      flex: 1; overflow-y: auto; padding: 18px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .chat-empty {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 8px; color: var(--muted);
+      text-align: center; font-size: .85rem;
+    }
+    .chat-empty-ico { font-size: 2.2rem; }
+    .msg { display: flex; gap: 8px; align-items: flex-end; }
+    .msg.user { flex-direction: row-reverse; }
+    .avatar {
+      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: .82rem; font-weight: 700;
+    }
+    .msg.user .avatar { background: #1e293b; color: #fff; }
+    .msg.ai   .avatar { background: var(--bg); border: 1px solid var(--border); color: var(--muted); }
+    .bubble {
+      max-width: 72%; padding: 9px 13px; border-radius: 12px;
+      font-size: .85rem; line-height: 1.6;
+    }
+    .msg.user .bubble { background: #1e293b; color: #fff; border-bottom-right-radius: 3px; }
+    .msg.ai   .bubble { background: var(--bg); border: 1px solid var(--border); border-bottom-left-radius: 3px; color: var(--text); }
+    .chat-foot {
+      padding: 10px 14px; border-top: 1px solid var(--border);
+      display: flex; gap: 8px; background: var(--surface);
+    }
+    .chat-foot input {
+      flex: 1; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px;
+      font-size: .875rem; outline: none; color: var(--text); transition: border-color .15s, box-shadow .15s;
+    }
+    .chat-foot input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.12); }
+    .btn-send {
+      padding: 9px 16px; background: #1e293b; color: #fff; border: none;
+      border-radius: 8px; font-size: .875rem; font-weight: 700; cursor: pointer; white-space: nowrap;
+      transition: background .15s;
+    }
+    .btn-send:hover { background: #334155; }
+    .btn-send:disabled { background: #94a3b8; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>💰 AI 연봉협상 전략 도우미</h1>
+    <p>Claude · GPT-4 · Gemini 3개 AI의 전략을 한번에 비교하세요</p>
+  </div>
+  <div class="api-status">
+    <span class="badge" id="s-claude"><span class="dot"></span> Claude</span>
+    <span class="badge" id="s-gpt"><span class="dot"></span> GPT-4</span>
+    <span class="badge" id="s-gemini"><span class="dot"></span> Gemini</span>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- Profile -->
+  <div class="card profile-card">
+    <h2>📋 내 정보 입력</h2>
+    <div class="form-grid">
+      <div class="fg">
+        <label>직군 *</label>
+        <input id="f-role" type="text" placeholder="예: 백엔드 개발자" value="백엔드 개발자">
+      </div>
+      <div class="fg">
+        <label>경력 (년) *</label>
+        <input id="f-exp" type="number" min="0" max="50" value="5">
+      </div>
+      <div class="fg">
+        <label>현재 연봉 (만원) *</label>
+        <input id="f-cur" type="number" placeholder="5000" value="5500">
+      </div>
+      <div class="fg">
+        <label>희망 연봉 (만원) *</label>
+        <input id="f-des" type="number" placeholder="6500" value="7000">
+      </div>
+      <div class="fg">
+        <label>회사명 (선택)</label>
+        <input id="f-co" type="text" placeholder="예: 네이버, 카카오">
+      </div>
+      <div class="fg">
+        <label>산업 (선택)</label>
+        <input id="f-ind" type="text" placeholder="예: IT, 금융, 스타트업">
+      </div>
+      <div class="fg">
+        <label>지역</label>
+        <select id="f-loc">
+          <option>서울</option>
+          <option>경기/수도권</option>
+          <option>부산</option>
+          <option>대구</option>
+          <option>기타</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="tab(this,'analysis')">📊 시장 분석</button>
+    <button class="tab-btn"        onclick="tab(this,'script')">📝 협상 스크립트</button>
+    <button class="tab-btn"        onclick="tab(this,'sim')">🎭 협상 시뮬레이션</button>
+  </div>
+
+  <!-- ── Analysis ── -->
+  <div id="pane-analysis" class="tab-pane active">
+    <div class="action-bar">
+      <p>3개 AI가 동시에 시장 연봉을 분석합니다</p>
+      <div class="btn-row">
+        <button class="btn btn-purple" id="cmp-analysis" style="display:none" onclick="doCompare('analysis')">🔮 AI 의견 종합</button>
+        <button class="btn btn-primary" id="btn-analysis" onclick="doAnalysis()">📊 분석 시작</button>
+      </div>
+    </div>
+    <div class="ai-cols">
+      <div class="ai-card claude">
+        <div class="ai-head"><div class="ai-ico">🟠</div><span class="ai-label">Claude</span><span class="ai-sub">Anthropic</span></div>
+        <div class="ai-body" id="r-analysis-claude"><div class="placeholder"><span class="ph-ico">📊</span><span>분석 시작을 눌러주세요</span></div></div>
+      </div>
+      <div class="ai-card gpt">
+        <div class="ai-head"><div class="ai-ico">🟢</div><span class="ai-label">GPT-4</span><span class="ai-sub">OpenAI</span></div>
+        <div class="ai-body" id="r-analysis-gpt"><div class="placeholder"><span class="ph-ico">📊</span><span>분석 시작을 눌러주세요</span></div></div>
+      </div>
+      <div class="ai-card gemini">
+        <div class="ai-head"><div class="ai-ico">🔵</div><span class="ai-label">Gemini</span><span class="ai-sub">Google</span></div>
+        <div class="ai-body" id="r-analysis-gemini"><div class="placeholder"><span class="ph-ico">📊</span><span>분석 시작을 눌러주세요</span></div></div>
+      </div>
+    </div>
+    <div id="syn-analysis"></div>
+  </div>
+
+  <!-- ── Script ── -->
+  <div id="pane-script" class="tab-pane">
+    <div class="action-bar">
+      <p>3개 AI가 맞춤형 협상 스크립트를 작성합니다</p>
+      <div class="btn-row">
+        <button class="btn btn-purple" id="cmp-script" style="display:none" onclick="doCompare('script')">🔮 AI 의견 종합</button>
+        <button class="btn btn-primary" id="btn-script" onclick="doScript()">📝 스크립트 생성</button>
+      </div>
+    </div>
+    <div class="ai-cols">
+      <div class="ai-card claude">
+        <div class="ai-head"><div class="ai-ico">🟠</div><span class="ai-label">Claude</span><span class="ai-sub">Anthropic</span></div>
+        <div class="ai-body" id="r-script-claude"><div class="placeholder"><span class="ph-ico">📝</span><span>스크립트 생성을 눌러주세요</span></div></div>
+      </div>
+      <div class="ai-card gpt">
+        <div class="ai-head"><div class="ai-ico">🟢</div><span class="ai-label">GPT-4</span><span class="ai-sub">OpenAI</span></div>
+        <div class="ai-body" id="r-script-gpt"><div class="placeholder"><span class="ph-ico">📝</span><span>스크립트 생성을 눌러주세요</span></div></div>
+      </div>
+      <div class="ai-card gemini">
+        <div class="ai-head"><div class="ai-ico">🔵</div><span class="ai-label">Gemini</span><span class="ai-sub">Google</span></div>
+        <div class="ai-body" id="r-script-gemini"><div class="placeholder"><span class="ph-ico">📝</span><span>스크립트 생성을 눌러주세요</span></div></div>
+      </div>
+    </div>
+    <div id="syn-script"></div>
+  </div>
+
+  <!-- ── Simulation ── -->
+  <div id="pane-sim" class="tab-pane">
+    <div class="sim-top">
+      <p>AI가 HR 담당자 역할을 맡아 실전 협상 연습을 도와드립니다</p>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:.78rem;color:var(--muted)">HR 역할:</span>
+        <div class="ai-pick">
+          <button class="pick-btn on" data-ai="claude" onclick="pickAI(this)">🟠 Claude</button>
+          <button class="pick-btn"    data-ai="gpt"    onclick="pickAI(this)">🟢 GPT-4</button>
+          <button class="pick-btn"    data-ai="gemini" onclick="pickAI(this)">🔵 Gemini</button>
+        </div>
+        <button class="btn btn-outline" style="padding:7px 12px;font-size:.78rem" onclick="resetChat()">🔄 새 대화</button>
+      </div>
+    </div>
+    <div class="chat-wrap">
+      <div class="chat-msgs" id="chat-msgs">
+        <div class="chat-empty" id="chat-empty">
+          <div class="chat-empty-ico">💬</div>
+          <strong>협상 시뮬레이션 시작</strong>
+          <span>아래에 메시지를 입력해 연봉 협상을 시작해보세요.<br>AI가 HR 담당자 역할을 맡아 실전처럼 응대합니다.</span>
+        </div>
+      </div>
+      <div class="chat-foot">
+        <input id="chat-in" type="text"
+          placeholder="협상 멘트를 입력하세요... (예: 안녕하세요, 연봉 관련해서 말씀드리고 싶습니다)"
+          onkeydown="if(event.key==='Enter')send()">
+        <button class="btn-send" id="btn-send" onclick="send()">전송</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+  // ── State ──
+  let results = { analysis: {}, script: {} };
+  let history = [];
+  let simAI = 'claude';
+
+  // ── Init ──
+  (async () => {
+    try {
+      const d = await (await fetch('/api/health')).json();
+      setBadge('s-claude', d.apis.claude, 'Claude');
+      setBadge('s-gpt',    d.apis.gpt,    'GPT-4');
+      setBadge('s-gemini', d.apis.gemini, 'Gemini');
+    } catch {}
+  })();
+
+  function setBadge(id, on, label) {
+    const el = document.getElementById(id);
+    el.className = 'badge' + (on ? ' on' : '');
+    el.innerHTML = `<span class="dot"></span> ${label}` + (on ? '' : ' <span style="font-size:.65rem;opacity:.6">키 없음</span>');
+  }
+
+  // ── Helpers ──
+  function profile() {
+    return {
+      role:           document.getElementById('f-role').value || '개발자',
+      experience:     parseInt(document.getElementById('f-exp').value)  || 0,
+      current_salary: parseInt(document.getElementById('f-cur').value)  || 0,
+      desired_salary: parseInt(document.getElementById('f-des').value)  || 0,
+      company:        document.getElementById('f-co').value,
+      industry:       document.getElementById('f-ind').value,
+      location:       document.getElementById('f-loc').value,
+    };
+  }
+
+  function loading(id) {
+    document.getElementById(id).innerHTML =
+      `<div class="loading"><div class="spin"></div><span>AI가 분석 중입니다...</span></div>`;
+  }
+
+  function setMD(id, text) {
+    document.getElementById(id).innerHTML = `<div class="md">${marked.parse(text)}</div>`;
+  }
+
+  function setErr(id, msg) {
+    document.getElementById(id).innerHTML = `<div class="err">⚠️ ${msg}</div>`;
+  }
+
+  // ── Tabs ──
+  function tab(btn, name) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('pane-' + name).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // ── Analysis ──
+  async function doAnalysis() {
+    const btn = document.getElementById('btn-analysis');
+    btn.disabled = true; btn.textContent = '⏳ 분석 중...';
+    document.getElementById('cmp-analysis').style.display = 'none';
+    document.getElementById('syn-analysis').innerHTML = '';
+    ['claude','gpt','gemini'].forEach(ai => loading('r-analysis-' + ai));
+
+    try {
+      const d = await post('/api/analyze', profile());
+      results.analysis = d;
+      ['claude','gpt','gemini'].forEach(ai => setMD('r-analysis-' + ai, d[ai]));
+      document.getElementById('cmp-analysis').style.display = 'inline-flex';
+    } catch(e) {
+      ['claude','gpt','gemini'].forEach(ai => setErr('r-analysis-' + ai, '서버 연결 오류'));
+    } finally {
+      btn.disabled = false; btn.textContent = '📊 분석 시작';
+    }
+  }
+
+  // ── Script ──
+  async function doScript() {
+    const btn = document.getElementById('btn-script');
+    btn.disabled = true; btn.textContent = '⏳ 생성 중...';
+    document.getElementById('cmp-script').style.display = 'none';
+    document.getElementById('syn-script').innerHTML = '';
+    ['claude','gpt','gemini'].forEach(ai => loading('r-script-' + ai));
+
+    try {
+      const d = await post('/api/script', profile());
+      results.script = d;
+      ['claude','gpt','gemini'].forEach(ai => setMD('r-script-' + ai, d[ai]));
+      document.getElementById('cmp-script').style.display = 'inline-flex';
+    } catch(e) {
+      ['claude','gpt','gemini'].forEach(ai => setErr('r-script-' + ai, '서버 연결 오류'));
+    } finally {
+      btn.disabled = false; btn.textContent = '📝 스크립트 생성';
+    }
+  }
+
+  // ── Compare ──
+  async function doCompare(mode) {
+    const btnId = 'cmp-' + mode;
+    const btn = document.getElementById(btnId);
+    btn.disabled = true; btn.textContent = '⏳ 종합 중...';
+    const el = document.getElementById('syn-' + mode);
+    el.innerHTML = `<div class="synthesis"><h3>🔮 AI 의견 종합 분석</h3><div class="loading" style="padding:16px 0"><div class="spin"></div><span>3개 AI 의견을 종합 분석 중...</span></div></div>`;
+
+    try {
+      const d = await post('/api/compare', { responses: results[mode], profile: profile(), mode });
+      el.innerHTML = `<div class="synthesis"><h3>🔮 AI 의견 종합 분석</h3><div class="md">${marked.parse(d.synthesis)}</div></div>`;
+    } catch(e) {
+      el.innerHTML = `<div class="err">종합 분석 오류: ${e.message}</div>`;
+    } finally {
+      btn.disabled = false; btn.textContent = '🔮 AI 의견 종합';
+    }
+  }
+
+  // ── Simulation ──
+  function pickAI(btn) {
+    simAI = btn.dataset.ai;
+    document.querySelectorAll('.pick-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+
+  function resetChat() {
+    history = [];
+    document.getElementById('chat-msgs').innerHTML = `
+      <div class="chat-empty" id="chat-empty">
+        <div class="chat-empty-ico">💬</div>
+        <strong>협상 시뮬레이션 시작</strong>
+        <span>아래에 메시지를 입력해 연봉 협상을 시작해보세요.<br>AI가 HR 담당자 역할을 맡아 실전처럼 응대합니다.</span>
+      </div>`;
+  }
+
+  function appendMsg(role, text, ai) {
+    const empty = document.getElementById('chat-empty');
+    if (empty) empty.remove();
+    const emos = { claude:'🟠', gpt:'🟢', gemini:'🔵' };
+    const el = document.createElement('div');
+    el.className = 'msg ' + (role === 'user' ? 'user' : 'ai');
+    el.innerHTML = `
+      <div class="avatar">${role === 'user' ? '나' : (emos[ai] || '🤖')}</div>
+      <div class="bubble">${escHtml(text)}</div>`;
+    const box = document.getElementById('chat-msgs');
+    box.appendChild(el);
+    box.scrollTop = box.scrollHeight;
+    return el;
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  }
+
+  async function send() {
+    const inp = document.getElementById('chat-in');
+    const btn = document.getElementById('btn-send');
+    const msg = inp.value.trim();
+    if (!msg) return;
+    inp.value = ''; inp.disabled = true; btn.disabled = true;
+
+    appendMsg('user', msg, null);
+    history.push({ role: 'user', content: msg });
+
+    // typing indicator
+    const typing = document.createElement('div');
+    typing.className = 'msg ai';
+    typing.innerHTML = `<div class="avatar">⏳</div><div class="bubble" style="color:var(--muted)">입력 중...</div>`;
+    const box = document.getElementById('chat-msgs');
+    box.appendChild(typing);
+    box.scrollTop = box.scrollHeight;
+
+    try {
+      const d = await post('/api/simulate', {
+        message: msg,
+        history: history.slice(0, -1),
+        profile: profile(),
+        ai_model: simAI,
+      });
+      typing.remove();
+      if (d.error) {
+        appendMsg('assistant', '⚠️ 오류: ' + d.error, simAI);
+      } else {
+        appendMsg('assistant', d.response, simAI);
+        history.push({ role: 'assistant', content: d.response });
+      }
+    } catch(e) {
+      typing.remove();
+      appendMsg('assistant', '⚠️ 연결 오류: ' + e.message, simAI);
+    } finally {
+      inp.disabled = false; btn.disabled = false; inp.focus();
+    }
+  }
+
+  // ── Fetch helper ──
+  async function post(url, body) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+</script>
+</body>
+</html>
