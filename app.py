@@ -51,6 +51,12 @@ class CompareRequest(BaseModel):
     mode: str = "analysis"
 
 
+class DebateRequest(BaseModel):
+    topic: str
+    profile: UserProfile
+    rounds: int = 2
+
+
 # --- AI call helpers ---
 
 async def call_claude(prompt: str) -> str:
@@ -298,6 +304,72 @@ async def simulate(data: SimulateRequest):
         return {"response": response, "error": None}
     except Exception as e:
         return {"response": None, "error": str(e)}
+
+
+@app.post("/api/debate")
+async def debate(req: DebateRequest):
+    p = req.profile
+    rounds = max(1, min(req.rounds, 3))
+    context = f"직군: {p.role}, 경력: {p.experience}년, 현재연봉: {p.current_salary:,}만원, 희망연봉: {p.desired_salary:,}만원"
+
+    debate_log = []
+    history_claude = []
+    history_gpt = []
+    history_gemini = []
+
+    topic_intro = f"""연봉협상 주제: {req.topic}
+상황: {context}
+
+이 연봉협상 상황에 대해 짧고 명확한 의견을 2-3문장으로 제시하세요. 다른 AI의 의견에 동의하거나 반박할 수 있습니다."""
+
+    ai_names = ["claude", "gpt", "gemini"]
+    callers = {
+        "claude": lambda prompt, hist: call_claude_chat(
+            f"당신은 연봉협상 전문가 Claude입니다. {context}", hist, prompt),
+        "gpt": lambda prompt, hist: call_gpt_chat(
+            f"당신은 연봉협상 전문가 GPT입니다. {context}", hist, prompt),
+        "gemini": lambda prompt, hist: call_gemini_chat(
+            f"당신은 연봉협상 전문가 Gemini입니다. {context}", hist, prompt),
+    }
+    histories = {"claude": history_claude, "gpt": history_gpt, "gemini": history_gemini}
+
+    for round_num in range(rounds):
+        for ai in ai_names:
+            if round_num == 0:
+                prompt = topic_intro
+            else:
+                prev = debate_log[-1]
+                prompt = f"""이전 발언:\n{prev['ai'].upper()}: {prev['message']}\n\n이 의견에 대해 동의 또는 반박하며 자신의 관점을 2-3문장으로 이어가세요."""
+
+            hist = histories[ai]
+            try:
+                response = await callers[ai](prompt, hist)
+            except Exception as e:
+                response = f"[오류: {str(e)}]"
+
+            hist.append({"role": "user", "content": prompt})
+            hist.append({"role": "assistant", "content": response})
+            debate_log.append({"round": round_num + 1, "ai": ai, "message": response})
+
+    summary_prompt = f"""다음은 연봉협상 주제 '{req.topic}'에 대한 3개 AI의 토론입니다 ({context}).
+
+토론 내용:
+""" + "\n".join(
+        f"[라운드{e['round']} - {e['ai'].upper()}]: {e['message']}"
+        for e in debate_log
+    ) + """
+
+토론을 3-4문장으로 요약하고, 가장 실용적인 합의점을 제시하세요."""
+
+    summary = ""
+    for fn in [call_claude, call_gpt, call_gemini]:
+        try:
+            summary = await fn(summary_prompt)
+            break
+        except Exception:
+            continue
+
+    return {"topic": req.topic, "rounds": rounds, "debate": debate_log, "summary": summary}
 
 
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

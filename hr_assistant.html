@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이직 리서치 어시스턴트</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  if (typeof pdfjsLib !== 'undefined') {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+</script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #0f0f13; color: #e8e8f0; min-height: 100vh; }
+
+  /* Header */
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 28px 32px; border-bottom: 1px solid #2a2a3e; }
+  .header h1 { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+  .header p { font-size: 13px; color: #8888aa; margin-top: 4px; }
+
+  /* Layout */
+  .container { display: flex; height: calc(100vh - 85px); }
+
+  /* Sidebar */
+  .sidebar { width: 280px; background: #13131e; border-right: 1px solid #1e1e2e; overflow-y: auto; flex-shrink: 0; }
+  .sidebar-title { font-size: 11px; font-weight: 600; color: #5555aa; text-transform: uppercase; letter-spacing: 1px; padding: 20px 20px 10px; }
+
+  .role-card { display: flex; align-items: center; gap: 12px; padding: 13px 20px; cursor: pointer; transition: all 0.15s; border-left: 3px solid transparent; }
+  .role-card:hover { background: #1a1a2e; }
+  .role-card.active { background: #1a1a2e; border-left-color: #6c63ff; }
+  .role-card .icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+  .role-card .info { flex: 1; min-width: 0; }
+  .role-card .info .num { font-size: 10px; color: #5555aa; font-weight: 600; }
+  .role-card .info .name { font-size: 13px; font-weight: 500; color: #d0d0e8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .role-card .info .desc { font-size: 11px; color: #666680; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Main */
+  .main { flex: 1; overflow-y: auto; padding: 32px; }
+  .main-inner { max-width: 720px; margin: 0 auto; }
+
+  /* Welcome */
+  .welcome { padding: 36px 0 60px; }
+  .welcome-top { text-align: center; margin-bottom: 36px; }
+  .welcome-top h2 { font-size: 26px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .welcome-top p { font-size: 14px; color: #8888aa; line-height: 1.7; }
+
+  /* How-to steps */
+  .steps { display: flex; gap: 0; margin-bottom: 40px; background: #13131e; border: 1px solid #1e1e2e; border-radius: 16px; overflow: hidden; }
+  .step { flex: 1; padding: 20px 18px; text-align: center; position: relative; }
+  .step + .step::before { content: '→'; position: absolute; left: -10px; top: 50%; transform: translateY(-50%); color: #3a3a5e; font-size: 16px; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #6c63ff, #a855f7); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+  .step-title { font-size: 13px; font-weight: 600; color: #d0d0e8; margin-bottom: 4px; }
+  .step-desc { font-size: 11px; color: #666680; line-height: 1.5; }
+
+  /* Scenario section */
+  .section-label { font-size: 11px; font-weight: 700; color: #5555aa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+  .scenarios { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 36px; }
+  .scenario-btn { background: #13131e; border: 1px solid #1e1e2e; border-radius: 14px; padding: 16px 18px; cursor: pointer; transition: all 0.15s; text-align: left; }
+  .scenario-btn:hover { border-color: #6c63ff; background: #1a1a2e; transform: translateY(-1px); }
+  .scenario-emoji { font-size: 22px; margin-bottom: 8px; }
+  .scenario-title { font-size: 13px; font-weight: 600; color: #d0d0e8; margin-bottom: 3px; }
+  .scenario-sub { font-size: 11px; color: #666680; line-height: 1.4; }
+
+  /* All roles quick list */
+  .all-roles { background: #13131e; border: 1px solid #1e1e2e; border-radius: 14px; overflow: hidden; }
+  .all-roles-header { padding: 14px 20px; border-bottom: 1px solid #1e1e2e; }
+  .quick-role { display: flex; align-items: center; gap: 12px; padding: 11px 20px; cursor: pointer; transition: background 0.12s; border-left: 3px solid transparent; }
+  .quick-role:hover { background: #1a1a2e; border-left-color: #6c63ff; }
+  .quick-role-icon { font-size: 16px; width: 30px; text-align: center; }
+  .quick-role-name { font-size: 13px; font-weight: 500; color: #c8c8e0; flex: 1; }
+  .quick-role-need { font-size: 11px; color: #555570; }
+
+  /* Role Detail */
+  .role-header { margin-bottom: 28px; }
+  .role-header .badge { display: inline-flex; align-items: center; gap: 6px; background: #1e1e3a; border: 1px solid #2a2a4e; border-radius: 20px; padding: 5px 14px; font-size: 12px; color: #8888cc; margin-bottom: 12px; }
+  .role-header h2 { font-size: 22px; font-weight: 700; color: #fff; }
+  .role-header p { font-size: 14px; color: #8888aa; margin-top: 6px; line-height: 1.6; }
+
+  /* Form */
+  .form-section { background: #13131e; border: 1px solid #1e1e2e; border-radius: 16px; padding: 24px; margin-bottom: 16px; }
+  .form-section h3 { font-size: 13px; font-weight: 600; color: #8888cc; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px; }
+
+  .form-group { margin-bottom: 16px; }
+  .form-group:last-child { margin-bottom: 0; }
+  .form-group label { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: #c0c0d8; margin-bottom: 7px; flex-wrap: wrap; }
+  .img-ocr-btn { display: inline-flex; align-items: center; gap: 4px; background: #1a1a3a; border: 1px solid #2a2a5e; color: #8888cc; font-size: 10px; font-weight: 600; padding: 2px 9px; border-radius: 8px; cursor: pointer; transition: all 0.15s; margin-left: auto; white-space: nowrap; }
+  .img-ocr-btn:hover { background: #2a2a4e; border-color: #6c63ff; color: #aaaaff; }
+  .img-ocr-status { font-size: 11px; color: #6c63ff; margin-top: 4px; display: none; }
+  .img-ocr-status.show { display: block; }
+  .form-group label span.required { color: #ff6b6b; margin-left: 3px; }
+  .form-group label span.optional { color: #555570; font-weight: 400; font-size: 11px; margin-left: 4px; }
+
+  input[type="text"], textarea, select {
+    width: 100%; background: #0f0f18; border: 1px solid #2a2a3e; border-radius: 10px;
+    color: #e0e0f0; font-size: 14px; padding: 11px 14px; font-family: inherit;
+    transition: border-color 0.15s; outline: none; resize: vertical;
+  }
+  input[type="text"]:focus, textarea:focus, select:focus { border-color: #6c63ff; }
+  textarea { min-height: 120px; line-height: 1.6; }
+  select option { background: #1a1a2e; }
+
+  /* Tag select */
+  .tag-group { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag { padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; border: 1px solid #2a2a3e; color: #8888aa; background: #0f0f18; transition: all 0.15s; }
+  .tag:hover { border-color: #6c63ff; color: #9988ff; }
+  .tag.selected { background: #2a2050; border-color: #6c63ff; color: #b0a8ff; }
+
+  /* API mode toggle bar */
+  .api-bar { display: flex; align-items: center; justify-content: space-between; background: #0e0e1a; border: 1px solid #1e1e2e; border-radius: 12px; padding: 10px 16px; margin-bottom: 16px; }
+  .api-bar-left { display: flex; align-items: center; gap: 10px; }
+  .api-dot { width: 8px; height: 8px; border-radius: 50%; background: #333355; }
+  .api-dot.on { background: #4ade80; box-shadow: 0 0 6px #4ade8088; }
+  .api-label { font-size: 12px; color: #8888aa; }
+  .api-label strong { color: #c0c0d8; }
+  .toggle-btn { font-size: 12px; background: #1e1e3a; border: 1px solid #2a2a4e; color: #9988ff; padding: 5px 12px; border-radius: 8px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .toggle-btn:hover { background: #2a2a4e; }
+  .toggle-btn.active { background: #2a4020; border-color: #2a6020; color: #4ade80; }
+
+  /* API settings panel */
+  .api-panel { background: #0e0e1a; border: 1px solid #1e3a1e; border-radius: 12px; padding: 18px; margin-bottom: 16px; display: none; }
+  .api-panel.open { display: block; }
+  .api-panel-row { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 12px; }
+  .api-panel-row:last-child { margin-bottom: 0; }
+  .api-key-input { flex: 1; background: #0f0f18; border: 1px solid #2a3a2e; border-radius: 8px; color: #e0e0f0; font-size: 13px; padding: 9px 12px; font-family: monospace; outline: none; }
+  .api-key-input:focus { border-color: #4ade80; }
+  .api-save-btn { padding: 9px 16px; background: #1a4020; border: 1px solid #2a6030; color: #4ade80; border-radius: 8px; cursor: pointer; font-size: 12px; font-family: inherit; white-space: nowrap; }
+  .model-select { background: #0f0f18; border: 1px solid #2a3a2e; border-radius: 8px; color: #e0e0f0; font-size: 13px; padding: 9px 12px; cursor: pointer; outline: none; }
+  .api-hint { font-size: 11px; color: #4a7a4a; line-height: 1.5; }
+  .cost-badge { font-size: 11px; background: #0a1a0a; border: 1px solid #1a3a1a; border-radius: 6px; padding: 3px 10px; color: #4ade80; margin-left: 8px; display: none; }
+
+  /* AI result box */
+  .ai-result { display: none; background: #080810; border: 1px solid #2a4a2e; border-radius: 14px; padding: 24px; margin-top: 20px; }
+  .ai-result.visible { display: block; }
+  .ai-result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .ai-result-title { font-size: 12px; font-weight: 700; color: #4ade80; text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 8px; }
+  .ai-result-body { font-size: 14px; color: #d0d0e8; line-height: 1.8; white-space: pre-wrap; word-break: break-word; max-height: 600px; overflow-y: auto; }
+  .ai-result-body h2 { font-size: 15px; font-weight: 700; color: #a090ff; margin: 18px 0 8px; }
+  .ai-result-body h3 { font-size: 14px; font-weight: 600; color: #8880cc; margin: 14px 0 6px; }
+  .btn-copy-result { padding: 6px 14px; border-radius: 8px; font-size: 12px; background: #1a1a3a; border: 1px solid #2a2a5e; color: #9988ff; cursor: pointer; font-family: inherit; }
+  .loading-spinner { display: none; text-align: center; padding: 32px; color: #5555aa; font-size: 14px; }
+  .loading-spinner.show { display: block; }
+
+  /* Feedback UI */
+  .feedback-bar { margin-top: 20px; background: #0d0d1a; border: 1px solid #1e1e2e; border-radius: 12px; padding: 16px 20px; }
+  .feedback-bar-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .feedback-label { font-size: 12px; color: #7777aa; }
+  .feedback-btns { display: flex; gap: 8px; }
+  .fb-btn { padding: 6px 16px; border-radius: 20px; font-size: 13px; cursor: pointer; border: 1px solid #2a2a3e; background: #13131e; color: #8888aa; font-family: inherit; transition: all 0.15s; }
+  .fb-btn:hover { transform: scale(1.05); }
+  .fb-btn.good  { border-color: #2a5020; color: #4ade80; background: #0a1a0a; }
+  .fb-btn.good.selected  { background: #1a4020; border-color: #4ade80; }
+  .fb-btn.bad   { border-color: #3a2020; color: #ff8888; background: #1a0a0a; }
+  .fb-btn.bad.selected   { background: #3a1a1a; border-color: #ff8888; }
+  .fb-note-row { display: flex; gap: 8px; }
+  .fb-note { flex: 1; background: #0f0f18; border: 1px solid #2a2a3e; border-radius: 8px; color: #c0c0d8; font-size: 12px; padding: 8px 12px; font-family: inherit; outline: none; }
+  .fb-note:focus { border-color: #6c63ff; }
+  .fb-save { padding: 8px 16px; background: #1e1e3a; border: 1px solid #2a2a5e; color: #9988ff; border-radius: 8px; font-size: 12px; cursor: pointer; font-family: inherit; white-space: nowrap; }
+  .fb-save:hover { background: #2a2a4e; }
+  .fb-saved { font-size: 11px; color: #4ade80; margin-top: 8px; display: none; }
+  .fb-saved.show { display: block; }
+
+  /* Memory badge on sidebar role cards */
+  .mem-badge { font-size: 9px; background: #1a2a1a; color: #4ade80; border: 1px solid #2a4a2a; border-radius: 8px; padding: 1px 6px; margin-left: 4px; vertical-align: middle; }
+
+  /* Generate button */
+  .generate-btn {
+    width: 100%; padding: 15px; border-radius: 12px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, #6c63ff 0%, #a855f7 100%);
+    color: #fff; font-size: 15px; font-weight: 600; font-family: inherit;
+    transition: all 0.2s; margin-top: 8px; letter-spacing: 0.2px;
+  }
+  .generate-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(108, 99, 255, 0.3); }
+  .generate-btn:active { transform: translateY(0); }
+  .generate-btn.api-mode { background: linear-gradient(135deg, #1a6020 0%, #2a8030 100%); }
+  .generate-btn.api-mode:hover { box-shadow: 0 8px 24px rgba(74, 222, 128, 0.2); }
+
+  /* Prompt output */
+  .prompt-output { display: none; }
+  .prompt-output.visible { display: block; }
+  .prompt-box { background: #0a0a12; border: 1px solid #2a2a3e; border-radius: 12px; padding: 20px; margin-top: 20px; position: relative; }
+  .prompt-box-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .prompt-box-header span { font-size: 12px; font-weight: 600; color: #6c63ff; text-transform: uppercase; letter-spacing: 0.8px; }
+  .prompt-actions { display: flex; gap: 8px; }
+
+  .btn-copy, .btn-claude {
+    padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: inherit; border: none; transition: all 0.15s;
+  }
+  .btn-copy { background: #1e1e3a; color: #9988ff; border: 1px solid #2a2a4e; }
+  .btn-copy:hover { background: #2a2a4e; }
+  .btn-claude { background: linear-gradient(135deg, #6c63ff, #a855f7); color: #fff; }
+  .btn-claude:hover { opacity: 0.9; }
+
+  .prompt-text { font-size: 13px; color: #c0c0d8; line-height: 1.7; white-space: pre-wrap; word-break: break-word; max-height: 320px; overflow-y: auto; }
+
+  .copy-success { display: none; font-size: 12px; color: #4ade80; margin-top: 8px; }
+  .copy-success.show { display: block; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2a2a3e; border-radius: 3px; }
+
+  /* Colors per role */
+  .c1 { background: #1e2a20; } .c2 { background: #1e2026; } .c3 { background: #261e20; }
+  .c4 { background: #262026; } .c5 { background: #1e2426; } .c6 { background: #261e1e; }
+  .c7 { background: #201e26; } .c8 { background: #261e24; } .c9 { background: #1e2620; }
+  .cp { background: #1a2030; }
+
+  /* Profile card */
+  .profile-card { margin: 12px 12px 4px; background: linear-gradient(135deg, #1e1e3a, #2a1e3a); border: 1px solid #3a2a5e; border-radius: 12px; padding: 13px 16px; cursor: pointer; transition: all 0.15s; }
+  .profile-card:hover { border-color: #9980ff; box-shadow: 0 0 0 1px #6c63ff22; }
+  .profile-card.active { border-color: #6c63ff; background: linear-gradient(135deg, #2a2050, #3a1e50); }
+  .profile-card-hint { font-size: 11px; color: #ff9966; margin-top: 8px; display: flex; align-items: center; gap: 5px; }
+  .profile-card-top { display: flex; align-items: center; justify-content: space-between; }
+  .profile-card-left { display: flex; align-items: center; gap: 10px; }
+  .profile-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #6c63ff, #a855f7); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .profile-name { font-size: 13px; font-weight: 600; color: #d0d0f0; }
+  .profile-sub { font-size: 11px; color: #7777aa; margin-top: 1px; }
+  .profile-badge { font-size: 10px; background: #2a4020; color: #4ade80; border: 1px solid #2a5020; padding: 2px 8px; border-radius: 10px; }
+  .profile-badge.empty { background: #2a1e1e; color: #ff8888; border-color: #3a2020; }
+  .profile-divider { height: 1px; background: #1e1e2e; margin: 8px 12px; }
+
+  /* Current application widget */
+  .cur-app { margin: 4px 12px 4px; border-radius: 12px; overflow: hidden; }
+  .cur-app-active { background: linear-gradient(135deg, #1a2a1a, #1e2e1e); border: 1px solid #2a5a2a; padding: 11px 14px; }
+  .cur-app-none { background: #0f0f1a; border: 1px dashed #1e1e3a; padding: 11px 14px; cursor: pointer; transition: all 0.15s; }
+  .cur-app-none:hover { border-color: #6c63ff; background: #13133a; }
+  .cur-app-label { font-size: 10px; font-weight: 700; color: #55aa55; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; }
+  .cur-app-company { font-size: 13px; font-weight: 600; color: #d0f0d0; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cur-app-pos { font-size: 11px; color: #77aa77; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cur-app-actions { display: flex; gap: 6px; margin-top: 8px; }
+  .cur-app-btn { font-size: 10px; padding: 3px 9px; border-radius: 8px; border: none; cursor: pointer; font-family: inherit; font-weight: 600; }
+  .cur-app-btn-end { background: #3a1e1e; color: #ff8888; border: 1px solid #5a2a2a; }
+  .cur-app-btn-end:hover { background: #4a2020; }
+  .cur-app-btn-view { background: #1e3a2a; color: #88ddaa; border: 1px solid #2a5a3a; }
+  .cur-app-btn-view:hover { background: #2a4a33; }
+  .cur-app-none-label { font-size: 11px; color: #666688; text-align: center; }
+  .cur-app-none-hint { font-size: 10px; color: #444466; margin-top: 3px; text-align: center; }
+  .save-app-btn { display: inline-flex; align-items: center; gap: 6px; background: #1a2a1a; border: 1px solid #2a5a2a; color: #88dd88; font-size: 12px; padding: 7px 14px; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 600; transition: all 0.15s; margin-top: 10px; }
+  .save-app-btn:hover { background: #2a3a2a; }
+
+  /* Profile screen */
+  .profile-screen {}
+  .profile-header { margin-bottom: 24px; }
+  .profile-header h2 { font-size: 22px; font-weight: 700; color: #fff; }
+  .profile-header p { font-size: 14px; color: #8888aa; margin-top: 6px; line-height: 1.6; }
+  .auto-fill-note { display: inline-flex; align-items: center; gap: 6px; background: #1a2030; border: 1px solid #2a3050; border-radius: 8px; padding: 8px 14px; font-size: 12px; color: #7788cc; margin-bottom: 20px; }
+
+  /* File upload drop zone */
+  .resume-upload { border: 2px dashed #2a2a4e; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 10px; background: #0f0f1a; }
+  .resume-upload:hover, .resume-upload.drag-over { border-color: #6c63ff; background: #13133a; }
+  .resume-upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .resume-upload-title { font-size: 13px; font-weight: 600; color: #ccccee; margin-bottom: 4px; }
+  .resume-upload-sub { font-size: 11px; color: #666688; }
+  .resume-upload-progress { display: none; font-size: 12px; color: #6c63ff; margin-top: 8px; }
+  .resume-upload-progress.show { display: block; }
+
+  /* Save button */
+  .save-btn { width: 100%; padding: 13px; border-radius: 12px; border: none; cursor: pointer; background: linear-gradient(135deg, #4a3fcc 0%, #7a35cc 100%); color: #fff; font-size: 14px; font-weight: 600; font-family: inherit; transition: all 0.2s; margin-top: 4px; }
+  .save-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(108, 99, 255, 0.25); }
+  .save-success { display: none; font-size: 12px; color: #4ade80; margin-top: 8px; text-align: center; }
+  .save-success.show { display: block; }
+
+  /* Auto-filled indicator */
+  .autofill-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: #6c63ff; background: #1e1e3a; border: 1px solid #2a2a5e; border-radius: 8px; padding: 2px 8px; margin-left: 6px; vertical-align: middle; cursor: pointer; }
+  .autofill-badge:hover { background: #2a2a4e; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎯 이직 리서치 어시스턴트</h1>
+  <p>회사·직무 탐색과 JD/핏 판단만 활성화되어 있습니다</p>
+</div>
+
+<div class="container">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div id="profileCardWrapper"></div>
+    <div class="profile-divider"></div>
+    <div id="curAppWidget"></div>
+    <div class="profile-divider"></div>
+    <div class="sidebar-title">롤 선택</div>
+    <div id="roleList"></div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="main-inner">
+      <div id="welcomeScreen" class="welcome">
+        <div class="welcome-top">
+          <h2>회사와 직무를 먼저 좁힙니다</h2>
+          <p>이 화면에서는 공고 해석, 지원 적합도, 회사 리서치만 다룹니다</p>
+        </div>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-title">상황 선택</div>
+            <div class="step-desc">왼쪽 메뉴 또는<br>아래 카드 클릭</div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-title">정보 입력</div>
+            <div class="step-desc">JD, 회사명 등<br>필요한 것만 채우기</div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-title">Claude 실행</div>
+            <div class="step-desc">버튼 클릭 →<br>claude.ai 바로 열림</div>
+          </div>
+        </div>
+
+        <div class="section-label">🚀 활성화된 상황</div>
+        <div class="scenarios">
+          <div class="scenario-btn" onclick="selectRole(1)">
+            <div class="scenario-emoji">📋</div>
+            <div class="scenario-title">JD를 받았어요</div>
+            <div class="scenario-sub">이 공고, 나한테 맞는 건지<br>뭘 원하는 건지 분석해줘</div>
+          </div>
+          <div class="scenario-btn" onclick="selectRole(3)">
+            <div class="scenario-emoji">🏢</div>
+            <div class="scenario-title">회사를 알고 싶어요</div>
+            <div class="scenario-sub">비즈니스·조직·산업 트렌드<br>한 번에 리서치</div>
+          </div>
+          <div class="scenario-btn" onclick="selectRole(2)">
+            <div class="scenario-emoji">🎯</div>
+            <div class="scenario-title">지원해도 될까 모르겠어요</div>
+            <div class="scenario-sub">내 스펙 vs JD<br>적합도 점수로 판단</div>
+          </div>
+        </div>
+
+        <div class="section-label">📚 활성 도구</div>
+        <div class="all-roles" id="allRolesQuick"></div>
+      </div>
+      <div id="profileScreen" style="display:none;"></div>
+      <div id="roleScreen" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const roles = [
+  {
+    id: 1, icon: "🔍", color: "c1",
+    name: "JD 분석",
+    desc: "요구사항 & 숨겨진 우선순위",
+    detail: "JD를 분석해 표면 요건, 숨겨진 우선순위, 레드플래그까지 파악합니다.",
+    fields: [
+      { id: "jd", label: "JD 원문", type: "textarea", placeholder: "채용공고 전체 내용을 붙여넣어 주세요", required: true },
+      { id: "company", label: "회사명", type: "text", placeholder: "예: 카카오, Google Korea", required: false },
+      { id: "stage", label: "회사 스테이지", type: "tags", options: ["스타트업(초기)", "스케일업", "중견기업", "대기업", "외국계"], required: false }
+    ],
+    prompt: (f) => `당신은 이직 리서치 에이전트입니다.
+아래 JD를 분석하되, 사실/해석/추정을 구분하고 확인되지 않은 내용은 반드시 '확인 필요'로 표시하세요.
+출력 형식은 다음으로 고정하세요:
+# 한줄 결론
+# 회사/직무 핵심 요약
+# 경력직 핏 분석
+# 지원 우선순위 판단
+# 리스크 및 확인 필요 항목
+# 다음 액션
+
+${f.company ? `【회사명】 ${f.company}` : ''}
+${f.stage ? `【회사 스테이지】 ${f.stage}` : ''}
+
+【JD 원문】
+${f.jd}`
+  },
+ {
+    id: 2, icon: "🎯", color: "c2",
+    name: "나 vs JD 매칭",
+    desc: "적합도 진단 & 갭 분석",
+    detail: "내 경력과 JD를 비교해 적합도 점수, 강점, 갭, 지원 전략을 알려드립니다.",
+    fields: [
+      { id: "jd", label: "JD 원문", type: "textarea", placeholder: "채용공고 전체 내용을 붙여넣어 주세요", required: true },
+      { id: "profile", label: "내 경력/스킬 요약", type: "textarea", placeholder: "직무 경력, 주요 스킬, 프로젝트, 학력 등을 자유롭게 적어주세요", required: true },
+      { id: "concern", label: "걱정되는 부분", type: "text", placeholder: "예: 경력 공백, 특정 기술 부족 등", required: false }
+    ],
+    prompt: (f) => `당신은 이직 리서치 에이전트입니다.
+아래 JD와 제 프로필을 비교 분석하되, 사실/해석/추정을 구분하고 확인되지 않은 내용은 반드시 '확인 필요'로 표시하세요.
+출력 형식은 다음으로 고정하세요:
+# 한줄 결론
+# 회사/직무 핵심 요약
+# 경력직 핏 분석
+# 지원 우선순위 판단
+# 리스크 및 확인 필요 항목
+# 다음 액션
+
+지원 판정은 반드시 `적극 지원 / 조건부 지원 / 보류 또는 제외` 중 하나로 명시하세요.
+
+${f.concern ? `【걱정되는 부분】 ${f.concern}` : ''}
+
+【JD 원문】
+${f.jd}
+
+【내 프로필】
+${f.profile}`
+  },
+  {
+    id: 3, icon: "🏢", color: "c3",
+    name: "종합 리서치",
+    desc: "회사·조직·산업 리서치",
+    detail: "회사 리서치, 조직 분석, 산업/트렌드를 지원 판단에 필요한 만큼만 정리합니다.",
+    fields: [
+      { id: "company",  label: "회사명",      type: "text",     placeholder: "예: 토스, Kakao, Krafton", required: true },
+      { id: "position", label: "지원 포지션", type: "text",     placeholder: "예: Senior Data Engineer", required: true },
+      { id: "scope",    label: "리서치 범위 (복수 선택)", type: "tags",
+        options: ["🏢 회사 리서치", "🧩 조직/팀 리서치", "📈 산업/트렌드 리서치"],
+        required: true },
+      { id: "depth",    label: "리서치 깊이", type: "tags",     options: ["빠른 요약 (핵심만)", "중간 (지원 판단용)", "심층 (전략 분석 포함)"], required: false },
+      { id: "known",    label: "이미 아는 정보", type: "textarea", placeholder: "파악한 내용이 있으면 적어주세요 (중복 제거용)", required: false }
+    ],
+    prompt: (f) => {
+      const scope = f.scope || '';
+      const doCompany  = scope.includes('회사');
+      const doOrg      = scope.includes('조직');
+      const doIndustry = scope.includes('산업');
+      return `당신은 회사/직무 리서치 에이전트입니다.
+최신 여부가 불확실한 외부 사실은 단정하지 말고 '확인 필요'를 붙이세요.
+출력 형식은 다음으로 고정하세요:
+# 한줄 결론
+# 회사/직무 핵심 요약
+# 경력직 핏 분석
+# 지원 우선순위 판단
+# 리스크 및 확인 필요 항목
+# 다음 액션
+
+【리서치 대상】
+- 회사: ${f.company}
+- 포지션: ${f.position}
+- 범위: ${f.scope}
+${f.depth   ? `- 깊이: ${f.depth}` : ''}
+${f.known   ? `- 이미 아는 것: ${f.known}` : ''}
+
+${doCompany ? `━━━━━━━━━━━━━━━━━━━━
+🏢 회사 리서치
+━━━━━━━━━━━━━━━━━━━━
+1. 비즈니스 모델 & 핵심 수익원
+2. 최근 주요 뉴스 / 전략 변화 / 이슈
+3. 재무 상태 & 성장 궤도 (공개 정보 기준)
+4. 경쟁사 포지셔닝 & 시장 내 위치
+5. 지원 판단에 필요한 회사 인사이트
+` : ''}
+${doOrg ? `━━━━━━━━━━━━━━━━━━━━
+🧩 조직/팀 리서치
+━━━━━━━━━━━━━━━━━━━━
+1. 조직 구조 & 이 포지션이 속할 팀의 위치
+2. 리더십 & 키맨 파악 (LinkedIn 등 기준)
+3. 조직 문화 & 일하는 방식 (Glassdoor/Blind 종합)
+4. 팀 내 이 롤의 기대 역할 & 성공 기준
+5. 지원 전 확인해야 할 조직 리스크
+` : ''}
+${doIndustry ? `━━━━━━━━━━━━━━━━━━━━
+📈 산업/트렌드 리서치
+━━━━━━━━━━━━━━━━━━━━
+1. 현재 산업 내 주요 트렌드 (2024-2025 기준)
+2. AI/기술 변화가 이 도메인에 미치는 영향
+3. 이 포지션 직무의 시장 수요 변화
+4. 지원 우선순위 판단에 반영할 포인트
+5. 이 산업에서 향후 1-2년 주목해야 할 변수
+` : ''}`
+    }
+  }
+];
+
+const ROLE_NEEDS = {
+  1: 'JD 원문',
+  2: 'JD + 내 경력',
+  3: '회사명·직무명'
+};
+
+// ── Profile fields that auto-fill into roles ──────────────────────────────
+// profileKey → list of { roleId, fieldId } that should be pre-filled
+const AUTO_FILL_MAP = {
+  resume:       [{ roleId: 2, fieldId: 'profile' }],
+};
+
+const PROFILE_FIELDS = [
+  { id: 'name',          label: '이름',              type: 'text',     placeholder: '예: 이주영', required: false },
+  { id: 'resume',        label: '경력 요약', type: 'textarea', placeholder: '직무 경력, 주요 스킬, 프로젝트, 학력 등\n여기에 저장해 두면 JD 매칭에 자동으로 채워집니다', required: false, rows: 10 },
+  { id: 'skills',        label: '핵심 스킬',          type: 'text',     placeholder: '예: Python, SQL, ML, Product Strategy', required: false },
+  { id: 'targetRole',    label: '희망 포지션/분야',   type: 'text',     placeholder: '예: AI 스타트업 Head of Product', required: false },
+  { id: 'note',          label: '기타 메모',          type: 'textarea', placeholder: '경력 공백, 특이 사항, 자주 쓰는 내용 등', required: false, rows: 4 },
+];
+
+// ── Profile persistence ────────────────────────────────────────────────────
+function loadProfile() {
+  try { return JSON.parse(localStorage.getItem('hr_profile') || '{}'); }
+  catch { return {}; }
+}
+function saveProfile(data) {
+  localStorage.setItem('hr_profile', JSON.stringify(data));
+}
+
+// ── Current application session ────────────────────────────────────────────
+function loadCurrentApp() {
+  try { return JSON.parse(localStorage.getItem('hr_current_app') || 'null'); }
+  catch { return null; }
+}
+function saveCurrentApp(data) {
+  localStorage.setItem('hr_current_app', JSON.stringify(data));
+}
+function clearCurrentApp() {
+  localStorage.removeItem('hr_current_app');
+}
+
+function renderCurAppWidget() {
+  const app = loadCurrentApp();
+  const el = document.getElementById('curAppWidget');
+  if (!el) return;
+  if (app && app.company) {
+    el.innerHTML = `
+      <div class="cur-app">
+        <div class="cur-app-active">
+          <div class="cur-app-label">🏢 지원 진행 중</div>
+          <div class="cur-app-company">${app.company}</div>
+          <div class="cur-app-pos">${app.position || 'JD 저장됨'}</div>
+          <div class="cur-app-actions">
+            <button class="cur-app-btn cur-app-btn-view" onclick="viewCurrentApp()">📋 JD 보기</button>
+            <button class="cur-app-btn cur-app-btn-end" onclick="endCurrentApp()">✕ 지원 종료</button>
+          </div>
+        </div>
+      </div>`;
+  } else {
+    el.innerHTML = `
+      <div class="cur-app">
+        <div class="cur-app-none" onclick="startNewApp()">
+          <div class="cur-app-none-label">🏢 지원 중인 회사 없음</div>
+          <div class="cur-app-none-hint">JD 분석 후 저장하면 자동 적용</div>
+        </div>
+      </div>`;
+  }
+}
+
+function startNewApp() {
+  selectRole(1);
+}
+
+function saveCurrentAppFromFields(roleId) {
+  const companyEl = document.getElementById('field-company');
+  const jdEl      = document.getElementById('field-jd');
+  const posEl     = document.getElementById('field-position');
+  const company   = companyEl ? companyEl.value.trim() : '';
+  const jd        = jdEl      ? jdEl.value.trim()      : '';
+  const position  = posEl     ? posEl.value.trim()      : '';
+  if (!company) { alert('회사명을 먼저 입력해주세요'); return; }
+  saveAsCurrentApp(company, jd, position);
+}
+
+function endCurrentApp() {
+  if (confirm('현재 지원을 종료하고 회사/JD 정보를 삭제할까요?')) {
+    clearCurrentApp();
+    renderCurAppWidget();
+    renderSidebar();
+    goHome();
+  }
+}
+
+function viewCurrentApp() {
+  const app = loadCurrentApp();
+  if (!app) return;
+  selectRole(1);
+  setTimeout(() => {
+    const jdEl = document.getElementById('field-jd');
+    const coEl = document.getElementById('field-company');
+    if (jdEl) jdEl.value = app.jd || '';
+    if (coEl) coEl.value = app.company || '';
+  }, 100);
+}
+
+function saveAsCurrentApp(company, jd, position) {
+  saveCurrentApp({ company, jd, position, savedAt: new Date().toISOString() });
+  renderCurAppWidget();
+  const banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1a3a1a;border:1px solid #2a6a2a;color:#88ee88;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;';
+  banner.textContent = `✅ "${company}" 지원이 시작됐습니다 — 활성 도구에 자동으로 적용돼요`;
+  document.body.appendChild(banner);
+  setTimeout(() => banner.remove(), 3500);
+}
+
+// ── Sidebar ────────────────────────────────────────────────────────────────
+function renderSidebar() {
+  renderProfileCard();
+  renderCurAppWidget();
+  const list = document.getElementById('roleList');
+  list.innerHTML = roles.map((r) => {
+    const cnt = getMemoryCount(ROLE_AGENT[r.id] || '');
+    const memBadge = cnt > 0 ? `<span class="mem-badge">🧠${cnt}</span>` : '';
+    return `
+    <div class="role-card" onclick="selectRole(${r.id})" id="card-${r.id}">
+      <div class="icon ${r.color}">${r.icon}</div>
+      <div class="info">
+        <div class="num">ROLE ${r.id}</div>
+        <div class="name">${r.name}${memBadge}</div>
+        <div class="desc">${r.desc}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderProfileCard() {
+  const p = loadProfile();
+  const hasData = p.name || p.resume;
+  document.getElementById('profileCardWrapper').innerHTML = `
+    <div class="profile-card ${currentView === 'profile' ? 'active' : ''}" onclick="showProfile()" id="profileCard">
+      <div class="profile-card-top">
+        <div class="profile-card-left">
+          <div class="profile-avatar">👤</div>
+          <div>
+            <div class="profile-name">${p.name || '내 프로필'}</div>
+            <div class="profile-sub">${hasData ? (p.targetRole || '경력 요약 저장됨') : '클릭해서 설정하기'}</div>
+          </div>
+        </div>
+        <div class="profile-badge ${hasData ? '' : 'empty'}">${hasData ? '저장됨' : '미설정'}</div>
+      </div>
+      ${!hasData ? `<div class="profile-card-hint">👆 경력 요약을 저장하면 자동입력 됩니다</div>` : ''}
+    </div>
+  `;
+}
+
+function renderAllRolesQuick() {
+  const el = document.getElementById('allRolesQuick');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="all-roles-header">
+      <span style="font-size:12px;color:#666680;">총 ${roles.length}개 도구 — 회사/직무 탐색만 활성화</span>
+    </div>
+    ${roles.map((r) => `
+      <div class="quick-role" onclick="selectRole(${r.id})">
+        <div class="quick-role-icon">${r.icon}</div>
+        <div class="quick-role-name">${r.name}</div>
+        <div class="quick-role-need">${ROLE_NEEDS[r.id] || ''}</div>
+      </div>
+    `).join('')}
+  `;
+}
+
+// ── Navigation helpers ─────────────────────────────────────────────────────
+let currentView = 'welcome';
+
+function goHome() {
+  currentView = 'welcome';
+  document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('welcomeScreen').style.display = 'block';
+  document.getElementById('profileScreen').style.display = 'none';
+  document.getElementById('roleScreen').style.display = 'none';
+  renderProfileCard();
+  renderAllRolesQuick();
+}
+
+// ── Profile screen ─────────────────────────────────────────────────────────
+
+function showProfile() {
+  currentView = 'profile';
+  document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('welcomeScreen').style.display = 'none';
+  document.getElementById('roleScreen').style.display = 'none';
+  document.getElementById('profileScreen').style.display = 'block';
+  renderProfileCard();
+  renderProfileScreen();
+  // Add back button to profile screen after render
+  const screen = document.getElementById('profileScreen');
+  screen.insertAdjacentHTML('afterbegin', `
+    <div style="margin-bottom:16px;">
+      <span onclick="goHome()" style="font-size:12px;color:#5555aa;cursor:pointer;display:inline-flex;align-items:center;gap:5px;">
+        ← 홈으로
+      </span>
+    </div>
+  `);
+}
+
+function renderProfileScreen() {
+  const p = loadProfile();
+  const screen = document.getElementById('profileScreen');
+  screen.innerHTML = `
+    <div class="profile-header">
+      <div class="badge">👤 내 프로필</div>
+      <h2>내 프로필</h2>
+      <p>한 번 저장하면 JD 매칭에 자동으로 채워집니다.<br>경력 요약이 바뀔 때마다 여기서 업데이트하세요.</p>
+    </div>
+    <div class="auto-fill-note">
+      ⚡ 경력 요약은 활성화된 JD 매칭 도구에만 자동으로 채워집니다
+    </div>
+    <div class="form-section">
+      <h3>경력 문서 업로드</h3>
+      <div class="resume-upload" id="resumeDropZone"
+        onclick="document.getElementById('resumeFileInput').click()"
+        ondragover="event.preventDefault(); this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="handleResumeDrop(event)">
+        <div class="resume-upload-icon">📄</div>
+        <div class="resume-upload-title">경력 문서를 여기에 드래그하거나 클릭해서 업로드</div>
+        <div class="resume-upload-sub">PDF · DOCX · TXT 지원 — 텍스트로 변환해서 아래 칸에 자동으로 채워집니다</div>
+        <div class="resume-upload-progress" id="uploadProgress">⏳ 파일 읽는 중...</div>
+      </div>
+      <input type="file" id="resumeFileInput" accept=".pdf,.docx,.txt,.doc" style="display:none"
+        onchange="handleResumeFile(this.files[0])">
+    </div>
+    <div class="form-section">
+      <h3>프로필 정보</h3>
+      ${PROFILE_FIELDS.map(f => renderProfileField(f, p[f.id] || '')).join('')}
+    </div>
+    <button class="save-btn" onclick="saveProfileData()">💾 프로필 저장</button>
+    <div class="save-success" id="saveSuccess">✅ 저장됐습니다! 이제 JD 매칭에 자동으로 채워집니다.</div>
+  `;
+}
+
+function renderProfileField(field, value) {
+  if (field.type === 'textarea') {
+    return `<div class="form-group">
+      <label>${field.label}<span class="optional">(선택)</span>
+        <span class="img-ocr-btn" onclick="document.getElementById('pImgInput-${field.id}').click()">📷 이미지로 올리기</span>
+        <input type="file" id="pImgInput-${field.id}" accept="image/*" style="display:none"
+          onchange="ocrImageToField(this, 'pfield-${field.id}', 'pOcrStatus-${field.id}', '${field.id === 'resume' ? 'resume' : 'general'}')">
+      </label>
+      <div class="img-ocr-status" id="pOcrStatus-${field.id}"></div>
+      <textarea id="pfield-${field.id}" placeholder="${field.placeholder}" rows="${field.rows || 5}">${value}</textarea>
+    </div>`;
+  }
+  return `<div class="form-group">
+    <label>${field.label}<span class="optional">(선택)</span></label>
+    <input type="text" id="pfield-${field.id}" placeholder="${field.placeholder}" value="${value}">
+  </div>`;
+}
+
+// ── Image OCR → field ──────────────────────────────────────────────────────
+async function ocrImageToField(input, targetFieldId, statusId, hint) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById(statusId);
+  status.textContent = '⏳ 이미지 읽는 중...';
+  status.classList.add('show');
+
+  try {
+    // Convert image to base64
+    const base64 = await new Promise((res, rej) => {
+      const reader = new FileReader();
+      reader.onload = e => res(e.target.result.split(',')[1]);
+      reader.onerror = rej;
+      reader.readAsDataURL(file);
+    });
+    const mediaType = file.type || 'image/jpeg';
+
+    const apiKey = loadApiKey();
+    if (!apiKey) {
+      status.textContent = '⚠️ API 키가 없어요 — 오른쪽 상단 ⚡ AI 모드에서 API 키를 먼저 입력해주세요';
+      return;
+    }
+
+    const res = await fetch(`${SERVER}/ocr`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ api_key: apiKey, image_base64: base64, media_type: mediaType, hint: hint || 'general' })
+    });
+
+    if (!res.ok) throw new Error(`서버 오류 ${res.status}`);
+    const data = await res.json();
+    const text = data.result || '';
+
+    const field = document.getElementById(targetFieldId);
+    if (field) {
+      field.value = text;
+      field.style.border = '1px solid #6c63ff';
+      setTimeout(() => field.style.border = '', 2000);
+    }
+    status.textContent = `✅ 텍스트 추출 완료 (${text.length.toLocaleString()}자)`;
+  } catch (err) {
+    status.textContent = `❌ 오류: ${err.message} — 서버가 켜져 있는지 확인해주세요`;
+  }
+  input.value = '';
+}
+
+// ── Resume file upload ──────────────────────────────────────────────────────
+function handleResumeDrop(e) {
+  e.preventDefault();
+  document.getElementById('resumeDropZone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) handleResumeFile(file);
+}
+
+async function handleResumeFile(file) {
+  if (!file) return;
+  const prog = document.getElementById('uploadProgress');
+  prog.textContent = '⏳ 파일 읽는 중...';
+  prog.classList.add('show');
+
+  try {
+    let text = '';
+    const ext = file.name.split('.').pop().toLowerCase();
+
+    if (ext === 'txt') {
+      text = await file.text();
+
+    } else if (ext === 'pdf') {
+      if (typeof pdfjsLib === 'undefined') throw new Error('PDF 라이브러리 로딩 실패');
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pages = [];
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        pages.push(content.items.map(s => s.str).join(' '));
+      }
+      text = pages.join('\n\n');
+
+    } else if (ext === 'docx' || ext === 'doc') {
+      if (typeof mammoth === 'undefined') throw new Error('DOCX 라이브러리 로딩 실패');
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      text = result.value;
+
+    } else {
+      throw new Error('지원하지 않는 파일 형식입니다 (PDF, DOCX, TXT만 가능)');
+    }
+
+    text = text.replace(/\s{3,}/g, '\n\n').trim();
+    const resumeField = document.getElementById('pfield-resume');
+    if (resumeField) resumeField.value = text;
+
+    // Smart extraction: use Claude API if key available, otherwise use regex
+    const apiKey = loadApiKey();
+    if (apiKey) {
+      prog.textContent = '🤖 Claude가 핵심 정보 추출 중...';
+      try {
+        const extractRes = await fetch(`${SERVER}/run`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            agent: 'profile_extract',
+            message: text.slice(0, 4000),
+            api_key: apiKey,
+            model: 'claude-haiku-4-5-20251001',
+            system_override: `경력 문서 텍스트에서 다음 정보를 추출해서 JSON만 반환하세요 (다른 설명 없이):
+{"name":"이름","skills":"핵심스킬 콤마구분","targetRole":"희망직무/포지션"}
+정보가 없으면 빈 문자열로. 반드시 JSON만 반환.`
+          })
+        });
+        if (extractRes.ok) {
+          const extractData = await extractRes.json();
+          const raw = extractData.result || '';
+          const match = raw.match(/\{[\s\S]*\}/);
+          if (match) {
+            const parsed = JSON.parse(match[0]);
+            if (parsed.name)       { const el = document.getElementById('pfield-name');       if (el && !el.value) el.value = parsed.name; }
+            if (parsed.skills)     { const el = document.getElementById('pfield-skills');     if (el && !el.value) el.value = parsed.skills; }
+            if (parsed.targetRole) { const el = document.getElementById('pfield-targetRole'); if (el && !el.value) el.value = parsed.targetRole; }
+            prog.textContent = `✅ 완료! 이름·스킬·희망포지션이 자동으로 채워졌습니다. 확인 후 저장하세요.`;
+          } else {
+            prog.textContent = `✅ ${file.name} 읽기 완료 — 내용을 확인하고 저장해주세요`;
+          }
+        }
+      } catch(e) {
+        prog.textContent = `✅ ${file.name} 읽기 완료 (${text.length.toLocaleString()}자) — 서버 미실행, 직접 확인 후 저장`;
+      }
+    } else {
+      // Fallback: simple regex extraction
+      const nameMatch = text.match(/^([가-힣]{2,4}|[A-Z][a-z]+ [A-Z][a-z]+)/m);
+      if (nameMatch) { const el = document.getElementById('pfield-name'); if (el && !el.value) el.value = nameMatch[1]; }
+      prog.textContent = `✅ ${file.name} 읽기 완료 (${text.length.toLocaleString()}자) — 내용 확인 후 저장하세요`;
+    }
+
+    if (resumeField) {
+      resumeField.style.border = '1px solid #4a3fcc';
+      setTimeout(() => resumeField.style.border = '', 2000);
+    }
+
+  } catch (err) {
+    prog.textContent = `❌ 오류: ${err.message}`;
+  }
+}
+
+function saveProfileData() {
+  const data = {};
+  PROFILE_FIELDS.forEach(f => {
+    const el = document.getElementById(`pfield-${f.id}`);
+    if (el) data[f.id] = el.value.trim();
+  });
+  saveProfile(data);
+  renderProfileCard();
+  const s = document.getElementById('saveSuccess');
+  s.classList.add('show');
+  setTimeout(() => s.classList.remove('show'), 3000);
+}
+
+// ── Role screen ────────────────────────────────────────────────────────────
+let currentRole = null;
+
+function selectRole(id) {
+  const nextRole = roles.find(r => r.id === id);
+  if (!nextRole) return;
+  currentRole = nextRole;
+  currentView = 'role';
+  document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById(`card-${id}`);
+  if (card) card.classList.add('active');
+  document.getElementById('welcomeScreen').style.display = 'none';
+  document.getElementById('profileScreen').style.display = 'none';
+  document.getElementById('roleScreen').style.display = 'block';
+  renderProfileCard();
+  renderRole(currentRole);
+}
+
+function getAutoFillValue(roleId, fieldId) {
+  // Check current application first (company + JD auto-fill)
+  const app = loadCurrentApp();
+  if (app) {
+    // Auto-fill company into active research roles.
+    if (fieldId === 'company' && [1, 3].includes(roleId) && app.company) return app.company;
+    // Auto-fill JD into roles: 1,2
+    if (fieldId === 'jd' && [1, 2].includes(roleId) && app.jd) return app.jd;
+    // Auto-fill position into research role.
+    if (fieldId === 'position' && roleId === 3 && app.position) return app.position;
+  }
+  // Then check profile
+  const p = loadProfile();
+  for (const [key, targets] of Object.entries(AUTO_FILL_MAP)) {
+    if (targets.some(t => t.roleId === roleId && t.fieldId === fieldId)) {
+      return p[key] || '';
+    }
+  }
+  return '';
+}
+
+function renderRole(role) {
+  const screen = document.getElementById('roleScreen');
+  screen.innerHTML = `
+    <div style="margin-bottom:20px;">
+      <span onclick="goHome()" style="font-size:12px;color:#5555aa;cursor:pointer;display:inline-flex;align-items:center;gap:5px;">
+        ← 홈으로
+      </span>
+    </div>
+    <div class="role-header">
+      <div class="badge">${role.icon} ROLE ${role.id}</div>
+      <h2>${role.name}</h2>
+      <p>${role.detail}</p>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:20px;align-items:center;">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#6c63ff;background:#1e1e3a;border:1px solid #2a2a5e;border-radius:20px;padding:5px 14px;">① 아래 내용 입력</div>
+      <div style="color:#3a3a5e;font-size:12px;">→</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#666680;background:#13131e;border:1px solid #1e1e2e;border-radius:20px;padding:5px 14px;">② 프롬프트 생성</div>
+      <div style="color:#3a3a5e;font-size:12px;">→</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#666680;background:#13131e;border:1px solid #1e1e2e;border-radius:20px;padding:5px 14px;">③ Claude에서 열기</div>
+    </div>
+    <div class="form-section">
+      <h3>입력 정보</h3>
+      ${role.fields.map(f => renderField(f, role.id)).join('')}
+      ${[1, 3].includes(role.id) ? `
+        <button class="save-app-btn" onclick="saveCurrentAppFromFields(${role.id})">
+          🏢 이 회사 지원 시작 — 활성 도구에 자동 적용
+        </button>` : ''}
+    </div>
+    <!-- API mode toggle -->
+    <div class="api-bar">
+      <div class="api-bar-left">
+        <div class="api-dot ${apiMode ? 'on' : ''}" id="apiDot"></div>
+        <span class="api-label" id="apiLabel">${apiMode
+          ? '<strong>AI 직접 답변 모드</strong> — 결과가 바로 여기 표시됩니다'
+          : '<strong>프롬프트 생성 모드</strong> — Claude.ai에 붙여넣기'
+        }</span>
+      </div>
+      <button class="toggle-btn ${apiMode ? 'active' : ''}" id="modeToggleBtn" onclick="toggleApiMode()">
+        ${apiMode ? '⚡ AI 모드 ON' : '⚡ AI 모드로 전환'}
+      </button>
+    </div>
+
+    <!-- API settings panel -->
+    <div class="api-panel ${apiMode ? 'open' : ''}" id="apiPanel">
+      <div class="api-panel-row">
+        <input class="api-key-input" type="password" id="apiKeyInput"
+          placeholder="sk-ant-api03-..."
+          value="${loadApiKey()}"
+          oninput="saveApiKey(this.value)">
+        <select class="model-select" id="modelSelect" onchange="saveModel(this.value)">
+          <option value="claude-haiku-4-5-20251001" ${loadModel()==='claude-haiku-4-5-20251001'?'selected':''}>Haiku (빠름·저렴 ~4원/회)</option>
+          <option value="claude-sonnet-4-6" ${loadModel()==='claude-sonnet-4-6'?'selected':''}>Sonnet (고품질 ~40원/회)</option>
+        </select>
+      </div>
+      <p class="api-hint">🔑 API 키는 현재 브라우저 세션에만 저장됩니다 &nbsp;|&nbsp; <a href="https://console.anthropic.com" target="_blank" style="color:#4a9a4a;">console.anthropic.com</a>에서 발급</p>
+    </div>
+
+    <button class="generate-btn ${apiMode ? 'api-mode' : ''}" id="mainBtn"
+      onclick="${apiMode ? 'runAgent()' : 'generatePrompt()'}" >
+      ${apiMode ? '⚡ AI에게 바로 물어보기' : '✨ 프롬프트 생성하기'}
+    </button>
+
+    <!-- Loading -->
+    <div class="loading-spinner" id="loadingSpinner">
+      <div style="font-size:28px;margin-bottom:12px;">⏳</div>
+      <div>AI 분석 중입니다...</div>
+      <div style="font-size:12px;color:#444466;margin-top:6px;">보통 10-20초 소요됩니다</div>
+    </div>
+
+    <!-- AI Direct Result -->
+    <div class="ai-result" id="aiResult">
+      <div class="ai-result-header">
+        <div class="ai-result-title">
+          <span>⚡</span>
+          <span id="aiResultTitle">AI 분석 결과</span>
+          <span class="cost-badge" id="costBadge"></span>
+        </div>
+        <button class="btn-copy-result" onclick="copyAiResult()">📋 복사</button>
+      </div>
+      <div class="ai-result-body" id="aiResultBody"></div>
+    </div>
+
+    <!-- Feedback bar -->
+    <div class="feedback-bar" id="feedbackBar" style="display:none;">
+      <div class="feedback-bar-top">
+        <span class="feedback-label">이 결과 어땠나요? 피드백이 쌓일수록 다음 답변이 더 좋아집니다 🧠</span>
+        <div class="feedback-btns">
+          <button class="fb-btn good" id="fbGood" onclick="selectFeedback('good')">👍 좋았어요</button>
+          <button class="fb-btn bad"  id="fbBad"  onclick="selectFeedback('bad')">👎 별로였어요</button>
+        </div>
+      </div>
+      <div class="fb-note-row">
+        <input class="fb-note" id="fbNote" placeholder="어떤 점이 좋았나요/별로였나요? (선택 — 짧게 써주시면 다음 번에 반영됩니다)" />
+        <button class="fb-save" onclick="saveFeedback()">저장</button>
+      </div>
+      <div class="fb-saved" id="fbSaved">✅ 피드백 저장됨 — 다음 번 답변에 반영됩니다</div>
+    </div>
+
+    <!-- Prompt mode output -->
+    <div id="promptOutput" class="prompt-output">
+      <div class="prompt-box">
+        <div class="prompt-box-header">
+          <span>생성된 프롬프트</span>
+          <div class="prompt-actions">
+            <button class="btn-copy" onclick="copyPrompt()">📋 복사</button>
+            <button class="btn-claude" onclick="openClaude()">🚀 Claude에서 열기</button>
+          </div>
+        </div>
+        <div class="prompt-text" id="promptText"></div>
+      </div>
+      <div class="copy-success" id="copySuccess">✅ 클립보드에 복사됐습니다!</div>
+    </div>
+  `;
+}
+
+function renderField(field, roleId) {
+  const autoVal = getAutoFillValue(roleId, field.id);
+  const isAutoFilled = autoVal.length > 0;
+  const req = field.required ? '<span class="required">*</span>' : '<span class="optional">(선택)</span>';
+  const autoTag = isAutoFilled ? `<span class="autofill-badge" onclick="showProfile()" title="프로필에서 불러옴 — 클릭해서 수정">⚡ 프로필 자동입력</span>` : '';
+
+  if (field.type === 'textarea') {
+    return `<div class="form-group">
+      <label>${field.label}${req}${autoTag}
+        <span class="img-ocr-btn" onclick="document.getElementById('imgInput-${field.id}').click()">📷 이미지로 올리기</span>
+        <input type="file" id="imgInput-${field.id}" accept="image/*" style="display:none"
+          onchange="ocrImageToField(this, 'field-${field.id}', 'ocrStatus-${field.id}', '${field.id === 'jd' ? 'jd' : 'general'}')">
+      </label>
+      <div class="img-ocr-status" id="ocrStatus-${field.id}"></div>
+      <textarea id="field-${field.id}" placeholder="${field.placeholder}" rows="5">${autoVal}</textarea>
+    </div>`;
+  } else if (field.type === 'text') {
+    return `<div class="form-group">
+      <label>${field.label}${req}${autoTag}</label>
+      <input type="text" id="field-${field.id}" placeholder="${field.placeholder}" value="${autoVal}">
+    </div>`;
+  } else if (field.type === 'tags') {
+    return `<div class="form-group">
+      <label>${field.label}${req}</label>
+      <div class="tag-group">
+        ${field.options.map(opt => `<div class="tag" onclick="toggleTag(this, '${field.id}')">${opt}</div>`).join('')}
+      </div>
+    </div>`;
+  }
+  return '';
+}
+
+function toggleTag(el, fieldId) {
+  const singleSelectFields = ['stage', 'output', 'level', 'competing', 'urgency', 'situation', 'type', 'depth', 'purpose', 'presentation'];
+  if (singleSelectFields.includes(fieldId)) {
+    el.closest('.tag-group').querySelectorAll('.tag').forEach(t => t.classList.remove('selected'));
+    el.classList.toggle('selected');
+  } else {
+    el.classList.toggle('selected');
+  }
+}
+
+function getTagValue(fieldId) {
+  const formGroups = document.querySelectorAll('#roleScreen .form-group');
+  const field = currentRole.fields.find(f => f.id === fieldId);
+  if (!field || field.type !== 'tags') return '';
+  let result = '';
+  formGroups.forEach(g => {
+    const tagGroup = g.querySelector('.tag-group');
+    if (!tagGroup) return;
+    const label = g.querySelector('label');
+    if (label && label.textContent.trim().startsWith(field.label)) {
+      result = Array.from(tagGroup.querySelectorAll('.tag.selected')).map(t => t.textContent).join(', ');
+    }
+  });
+  return result;
+}
+
+let generatedPrompt = '';
+
+function generatePrompt() {
+  const values = {};
+  currentRole.fields.forEach(f => {
+    if (f.type === 'textarea' || f.type === 'text') {
+      const el = document.getElementById(`field-${f.id}`);
+      values[f.id] = el ? el.value.trim() : '';
+    } else if (f.type === 'tags') {
+      values[f.id] = getTagValue(f.id);
+    }
+  });
+
+  const missing = currentRole.fields.filter(f => f.required && !values[f.id]);
+  if (missing.length > 0) {
+    alert(`필수 항목을 입력해 주세요:\n${missing.map(f => '• ' + f.label).join('\n')}`);
+    return;
+  }
+
+  generatedPrompt = currentRole.prompt(values);
+  document.getElementById('promptText').textContent = generatedPrompt;
+  const output = document.getElementById('promptOutput');
+  output.classList.add('visible');
+  output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copyPrompt() {
+  navigator.clipboard.writeText(generatedPrompt).then(() => {
+    const s = document.getElementById('copySuccess');
+    s.classList.add('show');
+    setTimeout(() => s.classList.remove('show'), 2500);
+  });
+}
+
+function openClaude() {
+  navigator.clipboard.writeText(generatedPrompt).then(() => {
+    window.open('https://claude.ai/new', '_blank');
+  }).catch(() => {
+    window.open('https://claude.ai/new', '_blank');
+  });
+}
+
+// ── Memory system ───────────────────────────────────────────────────────────
+const MAX_MEMORY = 10; // 에이전트당 최대 기억 수
+
+function loadMemory(agentId) {
+  try { return JSON.parse(localStorage.getItem(`hr_mem_${agentId}`) || '[]'); }
+  catch { return []; }
+}
+function saveMemory(agentId, mem) {
+  localStorage.setItem(`hr_mem_${agentId}`, JSON.stringify(mem.slice(-MAX_MEMORY)));
+}
+function getMemoryHints(agentId) {
+  const mem = loadMemory(agentId);
+  // 최근 good 4개 + bad 3개 추려서 전달
+  const good = mem.filter(m => m.rating === 'good').slice(-4);
+  const bad  = mem.filter(m => m.rating === 'bad').slice(-3);
+  return [...good, ...bad];
+}
+function getMemoryCount(agentId) {
+  return loadMemory(agentId).length;
+}
+
+let pendingFeedback = { rating: null, agentId: null };
+
+function selectFeedback(rating) {
+  pendingFeedback.rating = rating;
+  document.getElementById('fbGood').classList.toggle('selected', rating === 'good');
+  document.getElementById('fbBad').classList.toggle('selected', rating === 'bad');
+}
+
+function saveFeedback() {
+  const { rating, agentId } = pendingFeedback;
+  if (!rating || !agentId) { alert('👍 또는 👎 를 먼저 눌러주세요'); return; }
+  const note = document.getElementById('fbNote').value.trim();
+  const mem  = loadMemory(agentId);
+  mem.push({ rating, note, ts: Date.now() });
+  saveMemory(agentId, mem);
+  // UI
+  const saved = document.getElementById('fbSaved');
+  saved.classList.add('show');
+  document.getElementById('fbNote').value = '';
+  pendingFeedback.rating = null;
+  document.getElementById('fbGood').classList.remove('selected');
+  document.getElementById('fbBad').classList.remove('selected');
+  setTimeout(() => saved.classList.remove('show'), 3000);
+  // 사이드바 배지 갱신
+  renderSidebar();
+}
+
+// ── API mode ────────────────────────────────────────────────────────────────
+const SERVER = 'http://localhost:7432';
+let apiMode = localStorage.getItem('hr_api_mode') === 'true';
+
+function loadApiKey()  { return sessionStorage.getItem('hr_api_key') || ''; }
+function loadModel()   { return localStorage.getItem('hr_model')     || 'claude-haiku-4-5-20251001'; }
+function saveApiKey(v) { sessionStorage.setItem('hr_api_key', v); }
+function saveModel(v)  { localStorage.setItem('hr_model', v); }
+
+function toggleApiMode() {
+  apiMode = !apiMode;
+  localStorage.setItem('hr_api_mode', apiMode);
+  if (currentRole) renderRole(currentRole);
+}
+
+// Map role id → agent id
+const ROLE_AGENT = {
+  1:'jd_analysis',
+  2:'matching',
+  3:'research'
+};
+
+async function runAgent() {
+  const apiKey = loadApiKey();
+  if (!apiKey || !apiKey.startsWith('sk-')) {
+    alert('API 키를 먼저 입력해 주세요.\n(sk-ant-... 형식)'); return;
+  }
+
+  // Collect form values same as generatePrompt
+  const values = {};
+  currentRole.fields.forEach(f => {
+    if (f.type === 'textarea' || f.type === 'text') {
+      const el = document.getElementById(`field-${f.id}`);
+      values[f.id] = el ? el.value.trim() : '';
+    } else if (f.type === 'tags') {
+      values[f.id] = getTagValue(f.id);
+    }
+  });
+  const missing = currentRole.fields.filter(f => f.required && !values[f.id]);
+  if (missing.length > 0) {
+    alert(`필수 항목을 입력해 주세요:\n${missing.map(f => '• ' + f.label).join('\n')}`); return;
+  }
+
+  const userMsg  = currentRole.prompt(values);
+  const agentId  = ROLE_AGENT[currentRole.id];
+  const memHints = getMemoryHints(agentId);
+
+  // Show loading
+  document.getElementById('loadingSpinner').classList.add('show');
+  document.getElementById('aiResult').classList.remove('visible');
+  document.getElementById('feedbackBar').style.display = 'none';
+  document.getElementById('mainBtn').disabled = true;
+
+  try {
+    const res = await fetch(`${SERVER}/run`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        agent:        agentId,
+        message:      userMsg,
+        api_key:      apiKey,
+        model:        loadModel(),
+        memory_hints: memHints,
+      })
+    });
+
+    const data = await res.json();
+    document.getElementById('loadingSpinner').classList.remove('show');
+
+    if (!res.ok || data.error) {
+      alert(`오류: ${data.error || '알 수 없는 오류'}`); return;
+    }
+
+    // Render result
+    const body = document.getElementById('aiResultBody');
+    body.innerHTML = formatMarkdown(data.result);
+
+    // Title + memory indicator
+    const memCount = getMemoryCount(agentId);
+    const memTag   = memCount > 0
+      ? ` <span style="font-size:10px;background:#0a1a0a;border:1px solid #2a4a2a;border-radius:6px;padding:2px 8px;color:#4ade80;">🧠 ${memCount}개 학습됨</span>`
+      : '';
+    document.getElementById('aiResultTitle').innerHTML = data.agent + ' 결과' + memTag;
+
+    const badge = document.getElementById('costBadge');
+    badge.textContent = `≈ ${data.cost_krw}원 (${data.tokens.in}+${data.tokens.out} tok)`;
+    badge.style.display = 'inline-block';
+
+    document.getElementById('aiResult').classList.add('visible');
+
+    // Show feedback bar
+    pendingFeedback = { rating: null, agentId };
+    document.getElementById('feedbackBar').style.display = 'block';
+    document.getElementById('fbGood').classList.remove('selected');
+    document.getElementById('fbBad').classList.remove('selected');
+    document.getElementById('fbNote').value = '';
+
+    document.getElementById('aiResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } catch (err) {
+    document.getElementById('loadingSpinner').classList.remove('show');
+    if (err.message.includes('fetch')) {
+      alert('서버에 연결할 수 없습니다.\n\nserver.py가 실행 중인지 확인하세요:\n  python3 server.py');
+    } else {
+      alert(`오류: ${err.message}`);
+    }
+  } finally {
+    document.getElementById('mainBtn').disabled = false;
+  }
+}
+
+function formatMarkdown(text) {
+  return text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`(.+?)`/g, '<code style="background:#1a1a3a;padding:2px 6px;border-radius:4px;font-size:12px;">$1</code>')
+    .replace(/^> (.+)$/gm, '<blockquote style="border-left:3px solid #4ade80;padding:8px 14px;background:#0a1a0a;border-radius:0 8px 8px 0;margin:8px 0;">$1</blockquote>')
+    .replace(/\n/g, '<br>');
+}
+
+function copyAiResult() {
+  const text = document.getElementById('aiResultBody').innerText;
+  navigator.clipboard.writeText(text);
+  const btn = document.querySelector('.btn-copy-result');
+  btn.textContent = '✅ 복사됨';
+  setTimeout(() => btn.textContent = '📋 복사', 2000);
+}
+
+renderSidebar();
+renderAllRolesQuick();
+</script>
+</body>
+</html>

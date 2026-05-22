@@ -1,0 +1,928 @@
+{
+  "crawled_at": "2026-04-26T16:23:14.974527",
+  "total": 72,
+  "green": 0,
+  "orange": 3,
+  "red": 69,
+  "jobs": [
+    {
+      "title": " AI Agent Engineer, Intern",
+      "company": "센드버드",
+      "deadline": "",
+      "url": "https://sendbird.com/careers?gh_jid=8276676002",
+      "site": "센드버드",
+      "score": 53,
+      "verdict": "orange",
+      "matched": [
+        "ai",
+        "ai agent"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Software Engineer, AI Agent",
+      "company": "센드버드",
+      "deadline": "",
+      "url": "https://sendbird.com/careers?gh_jid=8395379002",
+      "site": "센드버드",
+      "score": 53,
+      "verdict": "orange",
+      "matched": [
+        "ai",
+        "ai agent"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Product Manager | 광고 (제품)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=6640388003",
+      "site": "당근마켓",
+      "score": 53,
+      "verdict": "orange",
+      "matched": [
+        "제품",
+        "product"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Applied AI Engineer",
+      "company": "센드버드",
+      "deadline": "",
+      "url": "https://sendbird.com/careers?gh_jid=8287120002",
+      "site": "센드버드",
+      "score": 44,
+      "verdict": "red",
+      "matched": [
+        "ai"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Forward Deployed Product Manager",
+      "company": "센드버드",
+      "deadline": "",
+      "url": "https://sendbird.com/careers?gh_jid=8027636002",
+      "site": "센드버드",
+      "score": 44,
+      "verdict": "red",
+      "matched": [
+        "product"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Forward Deployed Product Manager, Intern",
+      "company": "센드버드",
+      "deadline": "",
+      "url": "https://sendbird.com/careers?gh_jid=8276047002",
+      "site": "센드버드",
+      "score": 44,
+      "verdict": "red",
+      "matched": [
+        "product"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Head of Product, Korea",
+      "company": "센드버드",
+      "deadline": "",
+      "url": "https://sendbird.com/careers?gh_jid=8369993002",
+      "site": "센드버드",
+      "score": 44,
+      "verdict": "red",
+      "matched": [
+        "product"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "AI-Driven Data Analyst (인턴) | 로컬 잡스 (AI Integration)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=7711698003",
+      "site": "당근마켓",
+      "score": 44,
+      "verdict": "red",
+      "matched": [
+        "ai"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Business Development Manager | 로컬 잡스",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=5913421003",
+      "site": "당근마켓",
+      "score": 44,
+      "verdict": "red",
+      "matched": [
+        "pm"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Product Designer | 알림",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=7667450003",
+      "site": "당근마켓",
+      "score": 44,
+      "verdict": "red",
+      "matched": [
+        "product"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Product Manager | 중고거래",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=4772916003",
+      "site": "당근마켓",
+      "score": 44,
+      "verdict": "red",
+      "matched": [
+        "product"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Product Manager (인턴) | 커뮤니티 (모임)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=7701732003",
+      "site": "당근마켓",
+      "score": 44,
+      "verdict": "red",
+      "matched": [
+        "product"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Product Manager (인턴) | 로컬 비즈니스 (S&D)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=7503362003",
+      "site": "당근마켓",
+      "score": 44,
+      "verdict": "red",
+      "matched": [
+        "product"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Product Operations Manager | 중고거래",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=6685198003",
+      "site": "당근마켓",
+      "score": 44,
+      "verdict": "red",
+      "matched": [
+        "product"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Product Researcher (인턴) | 중고거래",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=7702863003",
+      "site": "당근마켓",
+      "score": 44,
+      "verdict": "red",
+      "matched": [
+        "product"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Security Engineer | 인프라 (보안, AI Security)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=7655325003",
+      "site": "당근마켓",
+      "score": 44,
+      "verdict": "red",
+      "matched": [
+        "ai"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Group Product Manager - Dynamic Product Ads",
+      "company": "몰로코",
+      "deadline": "",
+      "url": "https://job-boards.greenhouse.io/moloco/jobs/7510111003",
+      "site": "몰로코",
+      "score": 44,
+      "verdict": "red",
+      "matched": [
+        "product"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Group Product Manager - Dynamic Product Ads (그룹 프로덕트 매니저)",
+      "company": "몰로코",
+      "deadline": "",
+      "url": "https://job-boards.greenhouse.io/moloco/jobs/7510109003",
+      "site": "몰로코",
+      "score": 44,
+      "verdict": "red",
+      "matched": [
+        "product"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Growth Manager - Advertiser & Agency (Commerce Media)",
+      "company": "몰로코",
+      "deadline": "",
+      "url": "https://job-boards.greenhouse.io/moloco/jobs/7707404003",
+      "site": "몰로코",
+      "score": 44,
+      "verdict": "red",
+      "matched": [
+        "pm"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Growth Manager (Commerce Media)",
+      "company": "몰로코",
+      "deadline": "",
+      "url": "https://job-boards.greenhouse.io/moloco/jobs/7697773003",
+      "site": "몰로코",
+      "score": 44,
+      "verdict": "red",
+      "matched": [
+        "pm"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Regional Product Activation Lead, Korea",
+      "company": "몰로코",
+      "deadline": "",
+      "url": "https://job-boards.greenhouse.io/moloco/jobs/7690465003",
+      "site": "몰로코",
+      "score": 44,
+      "verdict": "red",
+      "matched": [
+        "product"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Technical Writer (1yr Contract)",
+      "company": "센드버드",
+      "deadline": "",
+      "url": "https://sendbird.com/careers?gh_jid=8497886002",
+      "site": "센드버드",
+      "score": 35,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Data Analytics Engineer | 테크코어 (데이터 가치화)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=7507320003",
+      "site": "당근마켓",
+      "score": 34,
+      "verdict": "red",
+      "matched": [
+        "데이터"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Machine Learning Engineer (머신러닝 엔지니어-전문연구요원)",
+      "company": "몰로코",
+      "deadline": "",
+      "url": "https://job-boards.greenhouse.io/moloco/jobs/6245366003",
+      "site": "몰로코",
+      "score": 34,
+      "verdict": "red",
+      "matched": [
+        "머신러닝"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Machine Learning Engineer II (머신러닝 엔지니어 II)",
+      "company": "몰로코",
+      "deadline": "",
+      "url": "https://job-boards.greenhouse.io/moloco/jobs/6023209003",
+      "site": "몰로코",
+      "score": 34,
+      "verdict": "red",
+      "matched": [
+        "머신러닝"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Senior Machine Learning Engineer (시니어 머신러닝 엔지니어)",
+      "company": "몰로코",
+      "deadline": "",
+      "url": "https://job-boards.greenhouse.io/moloco/jobs/5820201003",
+      "site": "몰로코",
+      "score": 34,
+      "verdict": "red",
+      "matched": [
+        "머신러닝"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Staff Machine Learning Engineer (스태프 머신러닝 엔지니어)",
+      "company": "몰로코",
+      "deadline": "",
+      "url": "https://job-boards.greenhouse.io/moloco/jobs/5820219003",
+      "site": "몰로코",
+      "score": 34,
+      "verdict": "red",
+      "matched": [
+        "머신러닝"
+      ],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Contract, Recruiting Assistant",
+      "company": "센드버드",
+      "deadline": "",
+      "url": "https://sendbird.com/careers?gh_jid=8445820002",
+      "site": "센드버드",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Enterprise Security Engineer",
+      "company": "센드버드",
+      "deadline": "",
+      "url": "https://sendbird.com/careers?gh_jid=8487800002",
+      "site": "센드버드",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Enterprise Security Engineer",
+      "company": "센드버드",
+      "deadline": "",
+      "url": "https://sendbird.com/careers?gh_jid=8487754002",
+      "site": "센드버드",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Intern, Marketing Coordination",
+      "company": "센드버드",
+      "deadline": "",
+      "url": "https://sendbird.com/careers?gh_jid=8499701002",
+      "site": "센드버드",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Staff Accountant (1 year Contract)",
+      "company": "센드버드",
+      "deadline": "",
+      "url": "https://sendbird.com/careers?gh_jid=8506448002",
+      "site": "센드버드",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "UX Designer",
+      "company": "센드버드",
+      "deadline": "",
+      "url": "https://sendbird.com/careers?gh_jid=8493340002",
+      "site": "센드버드",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "AD Sales Manager | 광고 (세일즈, Agency)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=5458903003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "AD Sales Manager | 광고 (세일즈, Client)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=4814736003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Brand Marketer | 마케팅",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=7575919003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Character Designer, Illustrator | 브랜딩",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=5090389003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Content Designer (계약직) | 로컬 비즈니스 (사업주 커뮤니케이션)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=6489738003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "CRM Marketer | 마케팅",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=5899154003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Data Analyst",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=6775986003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "DBA (Database Administrator) | 인프라 (DB)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=4351200003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "FP&A Manager | 재무 (경영관리)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=6238656003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Growth Marketer (계약직) | 마케팅 (퍼포먼스)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=7705727003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "HRBP | 경영지원 (피플)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=6645636003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Network Engineer (인턴) | 인프라 (네트워크)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=7701818003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Network Engineer | 인프라 (네트워크, Cloud)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=5004587003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Performance Marketer | 마케팅",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=7525074003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Risk Manager | 서비스 운영",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=6558811003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Security Engineer | 인프라 (보안, Detection & Response)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=6043519003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Software Engineer, Data",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=4300801003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Software Engineer, Machine Learning",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=5248527003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Software Engineer, Machine Learning | 검색 (품질)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=6610455003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Software Engineer, Machine Learning | ML 인프라",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=7498021003",
+      "site": "당근마켓",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Applied Scientist II (응용 과학자 II)",
+      "company": "몰로코",
+      "deadline": "",
+      "url": "https://job-boards.greenhouse.io/moloco/jobs/7562204003",
+      "site": "몰로코",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Expression of Interest(채용관심등록): Software Engineer - Korea",
+      "company": "몰로코",
+      "deadline": "",
+      "url": "https://job-boards.greenhouse.io/moloco/jobs/7711666003",
+      "site": "몰로코",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Growth Manager (Mid-Market)",
+      "company": "몰로코",
+      "deadline": "",
+      "url": "https://job-boards.greenhouse.io/moloco/jobs/6582519003",
+      "site": "몰로코",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Machine Learning Engineer Intern (3-month internship)",
+      "company": "몰로코",
+      "deadline": "",
+      "url": "https://job-boards.greenhouse.io/moloco/jobs/7635045003",
+      "site": "몰로코",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Senior Applied Scientist (시니어 응용 과학자)",
+      "company": "몰로코",
+      "deadline": "",
+      "url": "https://job-boards.greenhouse.io/moloco/jobs/7452525003",
+      "site": "몰로코",
+      "score": 25,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Software Engineer, Backend | 광고",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=6640363003",
+      "site": "당근마켓",
+      "score": 15,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Software Engineer, Backend | 로컬 비즈니스 (주문경험)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=7540124003",
+      "site": "당근마켓",
+      "score": 15,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Software Engineer, Backend | 커머스",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=6688872003",
+      "site": "당근마켓",
+      "score": 15,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Software Engineer, Backend | 나의당근",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=7659289003",
+      "site": "당근마켓",
+      "score": 15,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Software Engineer, Backend (전환형 인턴) | 운영 (운영개발)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=7703726003",
+      "site": "당근마켓",
+      "score": 15,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Software Engineer, Backend | 서비스 코어 (Identity Service)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=5046759003",
+      "site": "당근마켓",
+      "score": 15,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Software Engineer, Backend | 로컬 잡스 (Lessons & Tutoring)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=7675338003",
+      "site": "당근마켓",
+      "score": 15,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Software Engineer, Backend | 서비스 코어 (Location Intelligence)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=5046753003",
+      "site": "당근마켓",
+      "score": 15,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Software Engineer, Frontend | 알림",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=7668837003",
+      "site": "당근마켓",
+      "score": 15,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Software Engineer, Frontend | 커머스",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=6692173003",
+      "site": "당근마켓",
+      "score": 15,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Software Engineer, Frontend | 커뮤니티 (모임)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=7689088003",
+      "site": "당근마켓",
+      "score": 15,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Software Engineer, Frontend (인턴) | 로컬 비즈니스 (S&D)",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=7702533003",
+      "site": "당근마켓",
+      "score": 15,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Software Engineer, iOS",
+      "company": "당근마켓",
+      "deadline": "",
+      "url": "https://about.daangn.com?gh_jid=5282170003",
+      "site": "당근마켓",
+      "score": 15,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    },
+    {
+      "title": "Staff Backend Software Engineer (스태프 백엔드 소프트웨어 엔지니어)",
+      "company": "몰로코",
+      "deadline": "",
+      "url": "https://job-boards.greenhouse.io/moloco/jobs/5645749003",
+      "site": "몰로코",
+      "score": 15,
+      "verdict": "red",
+      "matched": [],
+      "snippet": "",
+      "keyword": ""
+    }
+  ]
+}

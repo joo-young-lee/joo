@@ -297,6 +297,7 @@
     <button class="tab-btn active" onclick="tab(this,'analysis')">📊 시장 분석</button>
     <button class="tab-btn"        onclick="tab(this,'script')">📝 협상 스크립트</button>
     <button class="tab-btn"        onclick="tab(this,'sim')">🎭 협상 시뮬레이션</button>
+    <button class="tab-btn"        onclick="tab(this,'debate')">⚔️ AI 토론</button>
   </div>
 
   <!-- ── Analysis ── -->
@@ -382,6 +383,29 @@
     </div>
   </div>
 
+  <!-- ── AI 토론 ── -->
+  <div id="pane-debate" class="tab-pane">
+    <div class="action-bar">
+      <p>3개 AI가 연봉협상 주제로 서로 토론합니다</p>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
+      <input id="debate-topic" type="text" placeholder="토론 주제 (예: 희망 연봉이 현실적인가?)" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:.9rem;min-width:220px">
+      <select id="debate-rounds" style="padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:.9rem">
+        <option value="1">1라운드</option>
+        <option value="2" selected>2라운드</option>
+        <option value="3">3라운드</option>
+      </select>
+      <button class="btn btn-primary" id="btn-debate" onclick="doDebate()">⚔️ 토론 시작</button>
+    </div>
+    <div id="debate-log" style="display:none">
+      <div id="debate-messages" style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px"></div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:18px">
+        <div style="font-weight:600;margin-bottom:8px;color:var(--accent)">🔮 토론 요약 & 합의점</div>
+        <div id="debate-summary" class="md"></div>
+      </div>
+    </div>
+  </div>
+
 </div><!-- /main -->
 
 <script>
@@ -430,6 +454,43 @@
 
   function setErr(id, msg) {
     document.getElementById(id).innerHTML = `<div class="err">⚠️ ${msg}</div>`;
+  }
+
+  // ── Debate ──
+  async function doDebate() {
+    const btn = document.getElementById('btn-debate');
+    const topic = document.getElementById('debate-topic').value.trim() || '이 연봉 협상 전략이 효과적인가?';
+    const rounds = parseInt(document.getElementById('debate-rounds').value);
+    btn.disabled = true; btn.textContent = '⏳ 토론 중...';
+    document.getElementById('debate-log').style.display = 'none';
+    document.getElementById('debate-messages').innerHTML = '';
+    document.getElementById('debate-summary').innerHTML = '';
+    try {
+      const d = await post('/api/debate', { topic, profile: profile(), rounds });
+      const aiColors = { claude: '#f97316', gpt: '#22c55e', gemini: '#3b82f6' };
+      const aiLabels = { claude: '🟠 Claude', gpt: '🟢 GPT-4', gemini: '🔵 Gemini' };
+      const container = document.getElementById('debate-messages');
+      let lastRound = 0;
+      for (const entry of d.debate) {
+        if (entry.round !== lastRound) {
+          lastRound = entry.round;
+          const rh = document.createElement('div');
+          rh.style = 'font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:4px';
+          rh.textContent = `라운드 ${entry.round}`;
+          container.appendChild(rh);
+        }
+        const el = document.createElement('div');
+        el.style = `background:var(--surface);border:1px solid var(--border);border-left:4px solid ${aiColors[entry.ai]};border-radius:10px;padding:14px 16px`;
+        el.innerHTML = `<div style="font-weight:600;color:${aiColors[entry.ai]};margin-bottom:6px">${aiLabels[entry.ai]}</div><div class="md">${marked.parse(entry.message)}</div>`;
+        container.appendChild(el);
+      }
+      document.getElementById('debate-summary').innerHTML = marked.parse(d.summary || '요약 없음');
+      document.getElementById('debate-log').style.display = 'block';
+    } catch(e) {
+      alert('토론 중 오류: ' + e.message);
+    } finally {
+      btn.disabled = false; btn.textContent = '⚔️ 토론 시작';
+    }
   }
 
   // ── Tabs ──

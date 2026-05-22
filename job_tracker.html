@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이주영 취업 트래커 · 노션 연동</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#f0f2f5;color:#1a1a2e;min-height:100vh}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,#1a1a2e,#0f3460);color:#fff;padding:24px 20px 20px}
+.header-inner{max-width:960px;margin:0 auto}
+.header h1{font-size:20px;font-weight:700;margin-bottom:4px}
+.header p{font-size:12px;opacity:.65}
+.notion-status{display:flex;align-items:center;gap:8px;margin-top:14px;padding:10px 14px;background:rgba(255,255,255,.1);border-radius:10px;font-size:12px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#ccc}
+.status-dot.ok{background:#2ecc71}
+.status-dot.err{background:#e74c3c}
+.status-dot.loading{background:#f39c12;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.connect-btn{margin-left:auto;padding:5px 12px;border-radius:6px;border:1.5px solid rgba(255,255,255,.4);background:transparent;color:#fff;font-size:11px;cursor:pointer;font-weight:600;transition:all .2s}
+.connect-btn:hover{background:rgba(255,255,255,.15)}
+
+/* TABS */
+.tabs{background:#fff;border-bottom:1px solid #e8eaed;position:sticky;top:0;z-index:20}
+.tabs-inner{max-width:960px;margin:0 auto;display:flex;overflow-x:auto}
+.tab{padding:14px 18px;font-size:13px;font-weight:500;cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;color:#666;transition:all .2s}
+.tab.active{color:#0f3460;border-bottom-color:#0f3460;font-weight:700}
+
+/* MAIN */
+.main{max-width:960px;margin:0 auto;padding:20px 16px 80px}
+.section{display:none}.section.active{display:block}
+
+/* CARDS */
+.card{background:#fff;border-radius:14px;padding:18px 20px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);transition:all .2s}
+.card:hover{box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.card.green{border-left:4px solid #27ae60}
+.card.orange{border-left:4px solid #e67e22}
+.card.red{border-left:4px solid #e74c3c}
+
+.card-header{display:flex;justify-content:space-between;align-items:flex-start}
+.card-meta{font-size:11px;color:#888;margin-bottom:3px;display:flex;align-items:center;gap:6px}
+.card-title{font-size:15px;font-weight:700}
+.score-badge{text-align:center;min-width:50px}
+.score-num{font-size:24px;font-weight:800;line-height:1}
+.score-sub{font-size:10px;color:#aaa}
+
+.card-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.tag{font-size:11px;padding:3px 8px;border-radius:4px;background:#f0f2f5;color:#555}
+.tag.primary{background:#e8f4fd;color:#0f3460}
+.tag.urgent{background:#fde8e8;color:#c0392b;font-weight:700}
+.tag.ok{background:#e8f8f0;color:#27ae60}
+
+/* STATUS SELECTS */
+.status-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
+.status-select{padding:5px 10px;border-radius:6px;border:1.5px solid #ddd;font-size:12px;background:#fff;cursor:pointer;font-family:inherit}
+.date-input{padding:5px 10px;border-radius:6px;border:1.5px solid #ddd;font-size:12px;background:#fff;font-family:inherit}
+.save-btn{padding:5px 14px;border-radius:6px;border:none;background:#0f3460;color:#fff;font-size:12px;cursor:pointer;font-weight:600;font-family:inherit;transition:all .2s}
+.save-btn:hover{background:#1a5276}
+.save-btn.saving{background:#aaa;pointer-events:none}
+.save-btn.saved{background:#27ae60}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:#1a1a2e;color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:100;transform:translateY(80px);opacity:0;transition:all .3s;max-width:280px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{background:#27ae60}
+.toast.err{background:#e74c3c}
+
+/* SETUP MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:28px;width:90%;max-width:440px}
+.modal h2{font-size:17px;font-weight:700;margin-bottom:8px}
+.modal p{font-size:13px;color:#555;line-height:1.6;margin-bottom:16px}
+.modal input{width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid #ddd;font-size:13px;margin-bottom:12px;font-family:inherit}
+.modal input:focus{outline:none;border-color:#0f3460}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.modal-cancel{padding:8px 16px;border-radius:7px;border:1.5px solid #ddd;background:#fff;font-size:13px;cursor:pointer;font-family:inherit}
+.modal-submit{padding:8px 16px;border-radius:7px;border:none;background:#0f3460;color:#fff;font-size:13px;cursor:pointer;font-weight:600;font-family:inherit}
+
+/* OVERVIEW */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.stat-card{background:#fff;border-radius:12px;padding:14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.stat-num{font-size:30px;font-weight:800;line-height:1}
+.stat-label{font-size:11px;color:#888;margin-top:3px}
+.stat-card.g .stat-num{color:#27ae60}
+.stat-card.o .stat-num{color:#e67e22}
+.stat-card.r .stat-num{color:#e74c3c}
+
+.urgency-bar{background:linear-gradient(135deg,#e94560,#c0392b);border-radius:12px;padding:14px 18px;color:#fff;margin-bottom:16px}
+.urgency-bar h3{font-size:13px;font-weight:700;margin-bottom:8px}
+.urgency-item{font-size:12px;display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.urgency-badge{background:rgba(255,255,255,.25);border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;white-space:nowrap}
+
+/* PROGRESS BARS */
+.progress-wrap{margin-top:8px}
+.progress-bg{background:#f0f2f5;border-radius:10px;height:5px;overflow:hidden}
+.progress-fill{height:100%;border-radius:10px}
+.progress-fill.g{background:linear-gradient(90deg,#27ae60,#2ecc71)}
+.progress-fill.o{background:linear-gradient(90deg,#e67e22,#f39c12)}
+.progress-fill.r{background:linear-gradient(90deg,#e74c3c,#e74c3c88)}
+
+.loading-spinner{text-align:center;padding:40px;color:#888;font-size:13px}
+
+/* FILTER BAR */
+.filter-bar{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap}
+.filter-btn{padding:6px 13px;border-radius:20px;border:1.5px solid #ddd;background:#fff;font-size:12px;cursor:pointer;font-weight:500;transition:all .2s;font-family:inherit}
+.filter-btn.active{background:#0f3460;color:#fff;border-color:#0f3460}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <h1>🎯 이주영 취업 트래커</h1>
+    <p>노션 이직 관리 DB + 공고 탐색/핏 판단 연동</p>
+    <div class="notion-status">
+      <div class="status-dot loading" id="status-dot"></div>
+      <span id="status-text">노션 연결 확인 중...</span>
+      <button class="connect-btn" onclick="openSetup()">⚙️ 설정</button>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tabs-inner">
+    <div class="tab active" onclick="showTab('daily',this)">📋 오늘의 공고</div>
+    <div class="tab" onclick="showTab('crawler',this)">🔎 공고 탐색</div>
+    <div class="tab" onclick="showTab('jobs',this)">🏢 지원 현황</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- DAILY JOBS -->
+  <div class="section active" id="tab-daily">
+    <!-- 헤더 카드 -->
+    <div class="card" style="padding:18px 20px;margin-bottom:14px;background:linear-gradient(135deg,#1a1a2e,#0f3460);color:#fff">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:15px;font-weight:700;margin-bottom:4px">📋 오늘의 추천 공고</div>
+          <div style="font-size:11px;opacity:.65" id="daily-crawled-at">매일 오전 9시 자동 수집 · 주요 채용 사이트 수집</div>
+        </div>
+        <button onclick="runCrawlerNow(this)"
+          style="padding:8px 16px;border-radius:8px;border:1.5px solid rgba(255,255,255,.4);background:transparent;color:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .2s">
+          🔄 지금 수집
+        </button>
+      </div>
+      <div style="display:flex;gap:14px;margin-top:14px">
+        <div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#2ecc71" id="d-green">-</div><div style="font-size:10px;opacity:.7">적극지원</div></div>
+        <div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#f39c12" id="d-orange">-</div><div style="font-size:10px;opacity:.7">조건부</div></div>
+        <div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#e74c3c" id="d-red">-</div><div style="font-size:10px;opacity:.7">낮음</div></div>
+        <div style="text-align:center"><div style="font-size:22px;font-weight:800" id="d-total">-</div><div style="font-size:10px;opacity:.7">전체</div></div>
+      </div>
+    </div>
+
+    <!-- 키워드 편집 -->
+    <div class="card" style="padding:14px 16px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:700">🏷 수집 키워드</span>
+        <span style="font-size:11px;color:#888">쉼표로 구분 · 저장하면 탐색/수집에 함께 반영</span>
+      </div>
+      <div style="display:flex;gap:8px">
+        <input id="keyword-input" type="text"
+          style="flex:1;padding:8px 12px;border-radius:7px;border:1.5px solid #ddd;font-size:12px;font-family:inherit"
+          placeholder="AI 기획, TPM, LLM 기획, 디지털전환 기획...">
+        <button onclick="saveKeywords()"
+          style="padding:8px 14px;border-radius:7px;border:none;background:#0f3460;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">
+          저장
+        </button>
+      </div>
+    </div>
+
+    <!-- 주목하는 공고 -->
+    <div id="bookmarked-section" style="display:none;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:#e67e22">⭐ 주목하는 공고</div>
+      <div id="bookmarked-list"></div>
+    </div>
+
+    <!-- 사이트 필터 -->
+    <div class="filter-bar" id="daily-site-filter">
+      <button class="filter-btn active" onclick="filterDaily('all','all',this)">전체</button>
+      <button class="filter-btn" onclick="filterDaily('verdict','green',this)">✅ 적극지원</button>
+      <button class="filter-btn" onclick="filterDaily('verdict','orange',this)">🔶 조건부</button>
+      <button class="filter-btn" onclick="filterDaily('site','잡코리아',this)">잡코리아</button>
+      <button class="filter-btn" onclick="filterDaily('site','원티드',this)">원티드</button>
+      <button class="filter-btn" onclick="filterDaily('site','사람인',this)">사람인</button>
+      <button class="filter-btn" onclick="filterDaily('site','리멤버',this)">리멤버</button>
+      <button class="filter-btn" onclick="filterDaily('site','잡플래닛',this)">잡플래닛</button>
+    </div>
+
+    <!-- URL 직접 크롤링 -->
+    <div class="card" style="padding:16px 18px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:8px">🔍 URL 직접 분석</div>
+      <div style="display:flex;gap:8px">
+        <input type="url" id="crawl-url-inline" placeholder="채용공고 URL 붙여넣기..."
+          style="flex:1;padding:9px 12px;border-radius:7px;border:1.5px solid #ddd;font-size:12px;font-family:inherit"
+          onkeydown="if(event.key==='Enter')startCrawlInline()">
+        <button onclick="startCrawlInline()"
+          style="padding:9px 16px;border-radius:7px;border:none;background:#0f3460;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">
+          분석
+        </button>
+      </div>
+      <div id="crawl-inline-result" style="display:none;margin-top:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <div id="crawl-inline-title" style="font-size:12px;font-weight:600"></div>
+          <div id="crawl-inline-score" style="font-size:18px;font-weight:800"></div>
+        </div>
+        <textarea id="crawl-text-inline" rows="6"
+          style="width:100%;padding:10px;border-radius:7px;border:1.5px solid #e8eaed;font-size:11px;resize:vertical;font-family:monospace;background:#fafafa"></textarea>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button onclick="copyJDInline()" style="padding:5px 12px;border-radius:5px;border:1.5px solid #ddd;background:#fff;font-size:11px;cursor:pointer;font-family:inherit">📋 복사</button>
+          <button onclick="bookmarkCrawledInline()" style="padding:5px 12px;border-radius:5px;border:none;background:#fef3cd;color:#856404;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">⭐ 주목</button>
+        </div>
+      </div>
+      <div id="crawl-loading-inline" style="display:none;text-align:center;padding:16px;color:#888;font-size:12px">🔍 분석 중...</div>
+    </div>
+
+    <div id="daily-loading" style="display:none;text-align:center;padding:40px;color:#888;font-size:13px">
+      <div style="font-size:28px;animation:pulse 1s infinite">📋</div>
+      <div style="margin-top:10px">공고 불러오는 중...</div>
+    </div>
+    <div id="daily-list"></div>
+  </div>
+
+  <!-- JOBS -->
+  <div class="section" id="tab-jobs">
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterJobs('all',this)">전체</button>
+      <button class="filter-btn" onclick="filterJobs('높음',this)">🔴 우선순위 높음</button>
+      <button class="filter-btn" onclick="filterJobs('중간',this)">🟡 중간</button>
+      <button class="filter-btn" onclick="filterJobs('낮음',this)">⚫ 낮음</button>
+    </div>
+    <div id="jobs-list"><div class="loading-spinner">📡 노션에서 불러오는 중...</div></div>
+  </div>
+
+  <!-- JD CRAWLER -->
+  <div class="section" id="tab-crawler">
+
+    <!-- 자동 탐색 섹션 -->
+    <div class="card" style="padding:20px;margin-bottom:14px;border-left:4px solid #8e44ad">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:4px">🤖 자동 탐색</h3>
+      <p style="font-size:12px;color:#888;margin-bottom:12px">이주영님 프로필 키워드(AI기획·TPM·전략기획·LLM 등)로 잡코리아·원티드·사람인·리멤버를 자동 검색하고 핏 점수까지 계산합니다.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px" id="keyword-chips">
+        <!-- 키워드 칩은 JS 렌더 -->
+      </div>
+      <button id="discover-btn" onclick="startDiscover()"
+        style="width:100%;padding:12px;border-radius:8px;border:none;background:linear-gradient(135deg,#8e44ad,#6c3483);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s">
+        🔎 지금 내 키워드로 공고 탐색하기
+      </button>
+    </div>
+
+    <!-- 자동 탐색 결과 -->
+    <div id="discover-loading" style="display:none;text-align:center;padding:30px;color:#888;font-size:13px">
+      <div style="font-size:28px;margin-bottom:10px;animation:pulse 1s infinite">🔎</div>
+      <div>잡보드 4곳 동시 탐색 중...</div>
+      <div style="font-size:11px;color:#bbb;margin-top:6px">잡코리아 · 원티드 · 사람인 · 리멤버</div>
+    </div>
+    <div id="discover-results" style="display:none;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span id="discover-count" style="font-size:13px;font-weight:700;color:#8e44ad"></span>
+        <div style="display:flex;gap:6px">
+          <button onclick="filterDiscover('all',this)" class="filter-btn active" id="df-all">전체</button>
+          <button onclick="filterDiscover('green',this)" class="filter-btn" id="df-green">✅ 적극지원</button>
+          <button onclick="filterDiscover('orange',this)" class="filter-btn" id="df-orange">🔶 조건부</button>
+          <button onclick="filterDiscover('red',this)" class="filter-btn" id="df-red">❌ 낮음</button>
+        </div>
+      </div>
+      <div id="discover-list"></div>
+    </div>
+
+    <hr style="border:none;border-top:1px solid #eee;margin:16px 0">
+
+    <!-- URL 직접 입력 섹션 -->
+    <div class="card" style="padding:20px;margin-bottom:14px">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:6px">🔍 URL 직접 크롤링</h3>
+      <p style="font-size:12px;color:#888;margin-bottom:14px">채용공고 URL을 붙여넣으면 JD 텍스트 추출 + 핏 점수 자동 계산.</p>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input type="url" id="crawl-url" placeholder="https://www.jobkorea.co.kr/..."
+          style="flex:1;padding:10px 14px;border-radius:8px;border:1.5px solid #ddd;font-size:13px;font-family:inherit"
+          onkeydown="if(event.key==='Enter')startCrawl()">
+        <button id="crawl-btn" onclick="startCrawl()"
+          style="padding:10px 18px;border-radius:8px;border:none;background:#0f3460;color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .2s">
+          🔍 크롤링
+        </button>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px" id="quick-urls">
+        <!-- 빠른 URL 버튼은 JS로 렌더 -->
+      </div>
+    </div>
+
+    <!-- 크롤링 결과 -->
+    <div id="crawl-result" style="display:none">
+      <div class="card" style="padding:20px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+          <div>
+            <div id="crawl-title" style="font-size:14px;font-weight:700;margin-bottom:4px"></div>
+            <div id="crawl-domain" style="font-size:11px;color:#888"></div>
+          </div>
+          <span id="crawl-length" style="font-size:11px;color:#aaa;white-space:nowrap"></span>
+        </div>
+        <textarea id="crawl-text" rows="12"
+          style="width:100%;padding:12px;border-radius:8px;border:1.5px solid #e8eaed;font-size:12px;resize:vertical;font-family:'Apple SD Gothic Neo','Noto Sans KR',monospace;line-height:1.6;background:#fafafa">
+        </textarea>
+        <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end;flex-wrap:wrap">
+          <button onclick="copyJD()" style="padding:7px 14px;border-radius:6px;border:1.5px solid #ddd;background:#fff;font-size:12px;cursor:pointer;font-family:inherit">📋 복사</button>
+          <button onclick="bookmarkCrawled()" style="padding:7px 14px;border-radius:6px;border:none;background:#fef3cd;color:#856404;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">⭐ 주목 공고에 추가</button>
+        </div>
+      </div>
+
+      <!-- 빠른 핏 체크 -->
+      <div class="card" style="padding:20px">
+        <h3 style="font-size:14px;font-weight:700;margin-bottom:10px">⚡ 빠른 핏 체크</h3>
+        <p style="font-size:12px;color:#888;margin-bottom:12px">JD 기반으로 이주영님 프로필과 빠르게 매칭해드립니다.</p>
+        <div id="quick-fit" style="display:none">
+          <div id="quick-fit-result"></div>
+        </div>
+        <button onclick="doQuickFit()" id="fit-btn"
+          style="padding:9px 18px;border-radius:7px;border:none;background:linear-gradient(135deg,#0f3460,#1a5276);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">
+          🎯 핏 분석하기
+        </button>
+      </div>
+    </div>
+
+    <!-- 크롤링 오류 -->
+    <div id="crawl-error" style="display:none" class="card">
+      <div style="padding:16px;color:#e74c3c;font-size:13px" id="crawl-error-msg"></div>
+    </div>
+
+    <!-- 크롤링 로딩 -->
+    <div id="crawl-loading" style="display:none;text-align:center;padding:40px;color:#888;font-size:13px">
+      <div style="font-size:28px;margin-bottom:10px;animation:pulse 1s infinite">🔍</div>
+      <div>JD 텍스트 추출 중...</div>
+      <div style="font-size:11px;margin-top:6px;color:#bbb" id="crawl-loading-url"></div>
+    </div>
+
+    <!-- 서버 오프라인 안내 -->
+    <div id="crawl-offline" style="display:none" class="card">
+      <div style="padding:20px;text-align:center;color:#888">
+        <div style="font-size:32px;margin-bottom:10px">📴</div>
+        <div style="font-weight:600;margin-bottom:6px">서버 오프라인</div>
+        <div style="font-size:12px">크롤링 기능은 로컬 서버가 필요합니다.<br><br>
+        <code style="background:#f0f2f5;padding:5px 10px;border-radius:5px">python3 job_tracker_server.py</code></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SETUP MODAL -->
+<div class="modal-bg" id="setup-modal">
+  <div class="modal">
+    <h2>🔑 노션 API 토큰 설정</h2>
+    <p>노션 워크스페이스와 연동하려면 Integration 토큰이 필요합니다.<br>
+    <a href="https://www.notion.so/my-integrations" target="_blank" style="color:#0f3460">notion.so/my-integrations</a>에서 발급받으세요.</p>
+    <input type="password" id="token-input" placeholder="secret_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+    <div style="font-size:11px;color:#888;margin-bottom:14px">⚠️ 토큰은 로컬 .env 파일에만 저장되며 외부로 전송되지 않습니다.</div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeSetup()">취소</button>
+      <button class="modal-submit" onclick="submitToken()">연결하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = "http://localhost:5555";
+
+// ─── 로컬 핏 데이터 ───────────────────────────────────────────
+const FIT_DATA = {
+  "한화생명": {score:88, verdict:"green", url:"https://www.notion.so/33eefe628ea1817e9c8cdfcdd977ac36"},
+  "신한투자증권": {score:83, verdict:"green", url:"https://www.notion.so/33eefe628ea1815a9744ce9d54b75d5c"},
+  "삼성생명": {score:82, verdict:"green", url:"https://www.notion.so/33eefe628ea1814483dbd08df80bb624"},
+  "채널톡": {score:77, verdict:"orange", url:"https://www.notion.so/33eefe628ea1811cad62d1f5361d93e0"},
+  "Google": {score:72, verdict:"orange"},
+  "넷플릭스": {score:68, verdict:"orange"},
+  "AXA손해보험": {score:67, verdict:"orange"},
+  "네이버웹툰": {score:58, verdict:"orange"},
+  "토스": {score:35, verdict:"red"},
+  "AB180 (에어브릿지)": {score:32, verdict:"red"},
+  "오비맥주 (AB InBev)": {score:25, verdict:"red"},
+};
+
+// ─── 상태 ─────────────────────────────────────────────────────
+let allJobs = [];
+let currentFilter = "all";
+let notionConnected = false;
+const ACTIVE_TABS = new Set(["daily", "crawler", "jobs"]);
+
+// ─── 초기화 ───────────────────────────────────────────────────
+async function init() {
+  await initKeywords();
+  await initKeywordChips();
+  renderBookmarks();
+  await checkStatus();
+  if (notionConnected) {
+    await loadJobs();
+  } else {
+    renderOfflineMode();
+  }
+  await loadDailyJobs();
+}
+
+// ─── API 연결 확인 ─────────────────────────────────────────────
+async function checkStatus() {
+  try {
+    const r = await fetch(`${API}/api/status`, {signal: AbortSignal.timeout(3000)});
+    const d = await r.json();
+    if (d.valid) {
+      setStatus("ok", `노션 연결됨 ${d.user ? "· "+d.user : ""}`);
+      notionConnected = true;
+    } else {
+      setStatus("err", "토큰 필요 · 설정 버튼 클릭");
+    }
+  } catch {
+    setStatus("err", "서버 오프라인 · job_tracker_server.py 실행 필요");
+  }
+}
+
+function setStatus(type, msg) {
+  document.getElementById("status-dot").className = `status-dot ${type==="ok"?"ok":"err"}`;
+  document.getElementById("status-text").textContent = msg;
+}
+
+// ─── 오프라인 모드 ─────────────────────────────────────────────
+function renderOfflineMode() {
+  document.getElementById("jobs-list").innerHTML = `<div class="card" style="text-align:center;padding:30px;color:#888">
+    <div style="font-size:32px;margin-bottom:12px">📴</div>
+    <div style="font-size:14px;font-weight:600;margin-bottom:6px">서버 오프라인</div>
+    <div style="font-size:12px">터미널에서 아래 명령어를 실행해 주세요:<br><br>
+    <code style="background:#f0f2f5;padding:6px 12px;border-radius:6px">python3 job_tracker_server.py</code><br><br>
+    그 다음 노션 API 토큰을 설정 버튼에서 입력하세요.</div>
+  </div>`;
+}
+
+// ─── 노션에서 잡 로드 ─────────────────────────────────────────
+async function loadJobs() {
+  try {
+    const r = await fetch(`${API}/api/jobs`);
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    allJobs = d.jobs || [];
+    renderJobs(currentFilter);
+  } catch(e) {
+    document.getElementById("jobs-list").innerHTML = `<div class="card" style="color:#e74c3c;padding:20px">오류: ${e.message}</div>`;
+  }
+}
+
+// ─── 잡 카드 렌더 ─────────────────────────────────────────────
+function renderJobs(filter) {
+  currentFilter = filter;
+  const el = document.getElementById("jobs-list");
+  if (!allJobs.length) { renderOfflineMode(); return; }
+
+  let filtered = allJobs;
+  if (filter !== "all") filtered = allJobs.filter(j => j.priority === filter);
+
+  el.innerHTML = filtered.map(job => {
+    const fit = FIT_DATA[job.company] || {};
+    const score = fit.score || 0;
+    const verdict = fit.verdict || "orange";
+    const urgentTags = [];
+    if (job.company === "한화생명" || job.company === "AXA손해보험") urgentTags.push("⚠️ 마감 임박");
+
+    return `<div class="card ${verdict}">
+      <div class="card-header">
+        <div>
+          <div class="card-meta">
+            ${job.company}
+            ${urgentTags.map(t=>`<span class="tag urgent">${t}</span>`).join("")}
+          </div>
+          <div class="card-title">${job.position}</div>
+        </div>
+        ${score ? `<div class="score-badge">
+          <div class="score-num" style="color:${verdict==="green"?"#27ae60":verdict==="orange"?"#e67e22":"#e74c3c"}">${score}</div>
+          <div class="score-sub">/ 100</div>
+        </div>` : ""}
+      </div>
+      <div class="card-tags">
+        <span class="tag primary">${job.priority || "우선순위 미설정"}</span>
+        ${(job.status||[]).map(s=>`<span class="tag ${s==="최종 합격"?"ok":s==="불합격"?"urgent":""}">${s}</span>`).join("")}
+      </div>
+      <div class="status-row">
+        <select class="status-select" onchange="updateStatus('${job.id}',this.value)">
+          ${["지원 예정","지원 완료","서류 통과","사전 인터뷰","1차 면접","1차 면접 완료","2차 면접","2차 면접 완료","3차 면접","3차 면접 완료","HR 면접","인성 면접","인성검사","직무 면접","레퍼런스 체크","최종 합격","불합격","지원철회","서류탈락"]
+            .map(s=>`<option ${(job.status||[]).includes(s)?"selected":""}>${s}</option>`).join("")}
+        </select>
+        <input type="date" class="date-input" value="${job.interview1||""}" title="1차 면접일"
+          onchange="updateDate('${job.id}','interview1',this.value)">
+        <button class="save-btn" onclick="openNotionPage('${fit.url||job.url}')">노션 열기 →</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function openNotionPage(url) {
+  if(url && url !== "#") window.open(url, "_blank");
+}
+
+// ─── 상태 업데이트 → 노션 ─────────────────────────────────────
+async function updateStatus(pageId, status) {
+  try {
+    const r = await fetch(`${API}/api/jobs/${pageId}`, {
+      method:"PATCH", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({status: [status]})
+    });
+    const d = await r.json();
+    if(d.error) throw new Error(d.error);
+    showToast("✅ 상태 업데이트 완료", "ok");
+  } catch(e) { showToast("❌ " + e.message, "err"); }
+}
+
+async function updateDate(pageId, field, value) {
+  try {
+    const r = await fetch(`${API}/api/jobs/${pageId}`, {
+      method:"PATCH", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({[field]: value})
+    });
+    const d = await r.json();
+    if(d.error) throw new Error(d.error);
+    showToast("✅ 날짜 저장됨", "ok");
+  } catch(e) { showToast("❌ " + e.message, "err"); }
+}
+
+// ─── 키워드 관리 ─────────────────────────────────────────────
+const DEFAULT_KEYWORDS = "AI 기획, TPM, AI 전략기획, LLM 기획, 생성형 AI 기획, 디지털전환 기획, Technical Program Manager, 플랫폼전략기획";
+
+function parseKeywordInput(raw) {
+  return raw.split(",").map(v => v.trim()).filter(Boolean);
+}
+
+async function initKeywords() {
+  const el = document.getElementById("keyword-input");
+  if(!el) return;
+  try {
+    const r = await fetch(`${API}/api/config`, {signal: AbortSignal.timeout(3000)});
+    const d = await r.json();
+    const keywords = Array.isArray(d.keywords) && d.keywords.length ? d.keywords.join(", ") : DEFAULT_KEYWORDS;
+    el.value = keywords;
+  } catch(e) {
+    el.value = localStorage.getItem("tracker_keywords") || DEFAULT_KEYWORDS;
+  }
+}
+
+async function saveKeywords() {
+  const val = document.getElementById("keyword-input").value.trim();
+  if(!val) return;
+  localStorage.setItem("tracker_keywords", val);
+  try {
+    await fetch(`${API}/api/config`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({keywords: parseKeywordInput(val)})
+    });
+    showToast("✅ 키워드 저장됨! 탐색/수집에 바로 반영됩니다.", "ok");
+  } catch(e) {
+    showToast("✅ 브라우저에는 저장됨. 서버 반영은 실패했습니다.", "ok");
+  }
+}
+
+// ─── 북마크 ─────────────────────────────────────────────────
+let bookmarks = JSON.parse(localStorage.getItem("tracker_bookmarks") || "[]");
+
+function toggleBookmark(job) {
+  const idx = bookmarks.findIndex(b => b.url === job.url);
+  if(idx >= 0) {
+    bookmarks.splice(idx, 1);
+    showToast("주목 해제됨", "ok");
+  } else {
+    bookmarks.push(job);
+    showToast("⭐ 주목 공고에 추가됐어요!", "ok");
+  }
+  localStorage.setItem("tracker_bookmarks", JSON.stringify(bookmarks));
+  renderBookmarks();
+  renderDailyJobs(); // 버튼 상태 갱신
+}
+
+function renderBookmarks() {
+  const section = document.getElementById("bookmarked-section");
+  const list = document.getElementById("bookmarked-list");
+  if(!section || !list) return;
+  if(!bookmarks.length) { section.style.display = "none"; return; }
+  section.style.display = "block";
+  list.innerHTML = bookmarks.map(job => {
+    const color = job.verdict==="green"?"#27ae60":job.verdict==="orange"?"#e67e22":"#e74c3c";
+    return `<div class="card ${job.verdict}" style="padding:12px 14px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;color:#888;margin-bottom:2px">${job.site}${job.company?" · "+job.company:""}</div>
+          <div style="font-size:13px;font-weight:600">${job.title}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:20px;font-weight:800;color:${color}">${job.score}</div>
+          <button onclick='toggleBookmark(${JSON.stringify(job).replace(/'/g,"&#39;")})'
+            style="padding:4px 8px;border-radius:5px;border:none;background:#fef3cd;color:#856404;font-size:11px;cursor:pointer;font-family:inherit">
+            ⭐ 해제
+          </button>
+          <a href="${job.url}" target="_blank"
+            style="padding:4px 10px;border-radius:5px;background:#0f3460;color:#fff;font-size:11px;font-weight:600;text-decoration:none">
+            보기 →
+          </a>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ─── 오늘의 공고 ─────────────────────────────────────────────
+let dailyJobs = [];
+let dailyFilterType = "all";
+let dailyFilterVal = "all";
+
+async function loadDailyJobs() {
+  document.getElementById("daily-loading").style.display = "block";
+  document.getElementById("daily-list").innerHTML = "";
+  try {
+    const r = await fetch(`${API}/api/daily-jobs`);
+    const d = await r.json();
+    document.getElementById("daily-loading").style.display = "none";
+    if(d.error && !d.jobs?.length) {
+      document.getElementById("daily-list").innerHTML = `
+        <div class="card" style="padding:24px;text-align:center;color:#888">
+          <div style="font-size:32px;margin-bottom:10px">📭</div>
+        <div style="font-weight:600;margin-bottom:6px">아직 수집된 공고가 없어요</div>
+          <div style="font-size:12px;margin-bottom:14px">'지금 수집' 버튼을 누르거나<br>설정된 일정에 맞춰 자동으로 수집됩니다</div>
+          <button onclick="runCrawlerNow(this)"
+            style="padding:9px 20px;border-radius:8px;border:none;background:#0f3460;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">
+            🔄 지금 수집하기
+          </button>
+        </div>`;
+      return;
+    }
+    dailyJobs = d.jobs || [];
+    document.getElementById("d-green").textContent = d.green || 0;
+    document.getElementById("d-orange").textContent = d.orange || 0;
+    document.getElementById("d-red").textContent = d.red || 0;
+    document.getElementById("d-total").textContent = d.total || 0;
+    if(d.crawled_at) {
+      const dt = new Date(d.crawled_at);
+      const schedule = d.schedule_label || "매일 오전 9시";
+      const sources = Array.isArray(d.sources) && d.sources.length ? d.sources.join("·") : "주요 채용 사이트";
+      document.getElementById("daily-crawled-at").textContent =
+        `마지막 수집: ${dt.toLocaleDateString("ko-KR")} ${dt.toLocaleTimeString("ko-KR", {hour:"2-digit",minute:"2-digit"})} · ${schedule} 자동 수집 · ${sources}`;
+    }
+    renderDailyJobs();
+  } catch(e) {
+    document.getElementById("daily-loading").style.display = "none";
+    document.getElementById("daily-list").innerHTML = `
+      <div class="card" style="padding:20px;text-align:center;color:#888">
+        <div style="font-size:32px;margin-bottom:8px">📴</div>
+        <div style="font-weight:600">서버 오프라인</div>
+        <div style="font-size:12px;margin-top:4px">job_tracker_server.py를 실행해 주세요</div>
+      </div>`;
+  }
+}
+
+function filterDaily(type, val, btn) {
+  dailyFilterType = type;
+  dailyFilterVal = val;
+  document.querySelectorAll("#daily-site-filter .filter-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  renderDailyJobs();
+}
+
+function renderDailyJobs() {
+  const el = document.getElementById("daily-list");
+  let jobs = dailyJobs;
+  if(dailyFilterType === "verdict") jobs = jobs.filter(j => j.verdict === dailyFilterVal);
+  if(dailyFilterType === "site") jobs = jobs.filter(j => j.site === dailyFilterVal);
+
+  if(!jobs.length) {
+    el.innerHTML = `<div style="text-align:center;padding:20px;color:#888;font-size:13px">해당 조건의 공고가 없습니다.</div>`;
+    return;
+  }
+
+  el.innerHTML = jobs.map(job => {
+    const color = job.verdict==="green"?"#27ae60":job.verdict==="orange"?"#e67e22":"#e74c3c";
+    const label = job.verdict==="green"?"✅ 적극지원":job.verdict==="orange"?"🔶 조건부":"❌ 낮음";
+    const siteColors = {"잡코리아":"#e8f4fd","원티드":"#fff0f0","사람인":"#f0fff4","리멤버":"#f5f0ff","잡플래닛":"#e8f0fe"};
+    const siteBg = siteColors[job.site] || "#f0f2f5";
+    const isBookmarked = bookmarks.some(b => b.url === job.url);
+    return `<div class="card ${job.verdict}" style="padding:14px 16px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap">
+            <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${siteBg};font-weight:600">${job.site}</span>
+            ${job.company ? `<span style="font-size:11px;color:#555">${job.company}</span>` : ""}
+            ${job.deadline ? `<span style="font-size:11px;color:#e74c3c;font-weight:600">⏰ ${job.deadline}</span>` : ""}
+          </div>
+          <div style="font-size:14px;font-weight:600;line-height:1.4;margin-bottom:6px">${job.title}</div>
+          ${job.matched?.length ? `<div style="font-size:11px;color:#27ae60">🎯 ${job.matched.slice(0,4).join(" · ")}</div>` : ""}
+        </div>
+        <div style="text-align:center;min-width:44px">
+          <div style="font-size:22px;font-weight:800;color:${color};line-height:1">${job.score}</div>
+          <div style="font-size:9px;color:#aaa">/ 100</div>
+          <div style="font-size:10px;font-weight:600;color:${color};margin-top:2px">${label.split(" ")[0]}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+        <a href="${job.url}" target="_blank"
+          style="padding:5px 12px;border-radius:5px;border:none;background:#0f3460;color:#fff;font-size:11px;font-weight:600;text-decoration:none">
+          🔗 공고 보기
+        </a>
+        <button onclick='toggleBookmark(${JSON.stringify(job).replace(/'/g,"&#39;").replace(/"/g,"&quot;")})'
+          style="padding:5px 12px;border-radius:5px;border:none;background:${isBookmarked?"#fef3cd":"#f0f2f5"};color:${isBookmarked?"#856404":"#555"};font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">
+          ${isBookmarked?"⭐ 주목 중":"☆ 주목"}
+        </button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+async function runCrawlerNow(btn) {
+  const orig = btn.textContent;
+  btn.textContent = "⏳ 수집 중... (30~60초)";
+  btn.disabled = true;
+  try {
+    const keywords = parseKeywordInput(document.getElementById("keyword-input").value || DEFAULT_KEYWORDS);
+    const r = await fetch(`${API}/api/run-crawler`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({keywords})
+    });
+    const d = await r.json();
+    showToast(`🔄 크롤러 시작! ${keywords.length}개 키워드로 수집합니다.`, "ok");
+    setTimeout(() => loadDailyJobs(), 65000);
+  } catch(e) {
+    showToast("❌ 서버 오프라인", "err");
+  } finally {
+    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 5000);
+  }
+}
+
+// ─── 자동 탐색 ───────────────────────────────────────────────
+const PROFILE_KEYWORDS = ["AI 기획", "TPM", "AI 전략기획", "LLM", "생성형 AI", "디지털 전환", "플랫폼전략기획"];
+let discoverData = [];
+let discoverFilter = "all";
+
+async function initKeywordChips() {
+  const el = document.getElementById("keyword-chips");
+  if(!el) return;
+  let keywords = PROFILE_KEYWORDS;
+  try {
+    const r = await fetch(`${API}/api/config`, {signal: AbortSignal.timeout(3000)});
+    const d = await r.json();
+    if(Array.isArray(d.keywords) && d.keywords.length) keywords = d.keywords;
+  } catch(e) {}
+  el.innerHTML = keywords.map(k=>`
+    <span style="padding:4px 10px;border-radius:12px;background:#f3e8ff;color:#6c3483;font-size:11px;font-weight:600">${k}</span>
+  `).join("");
+}
+
+async function startDiscover() {
+  const btn = document.getElementById("discover-btn");
+  btn.textContent = "⏳ 탐색 중...";
+  btn.style.background = "#aaa";
+  btn.disabled = true;
+  document.getElementById("discover-results").style.display = "none";
+  document.getElementById("discover-loading").style.display = "block";
+
+  try {
+    const r = await fetch(`${API}/api/discover`, {signal: AbortSignal.timeout(35000)});
+    const d = await r.json();
+    discoverData = d.jobs || [];
+    document.getElementById("discover-loading").style.display = "none";
+    document.getElementById("discover-count").textContent =
+      `🔎 ${discoverData.length}개 공고 발견 · 핏 점수 자동 계산됨`;
+    document.getElementById("discover-results").style.display = "block";
+    renderDiscoverList("all");
+    showToast(`✅ ${discoverData.length}개 공고 탐색 완료!`, "ok");
+  } catch(e) {
+    document.getElementById("discover-loading").style.display = "none";
+    if(e.message.includes("Failed") || e.message.includes("fetch")) {
+      showToast("❌ 서버 오프라인. job_tracker_server.py를 먼저 실행하세요.", "err");
+    } else {
+      showToast("❌ " + e.message, "err");
+    }
+  } finally {
+    btn.textContent = "🔎 지금 내 키워드로 공고 탐색하기";
+    btn.style.background = "linear-gradient(135deg,#8e44ad,#6c3483)";
+    btn.disabled = false;
+  }
+}
+
+function fitScore(job) {
+  // 타이틀 기반 빠른 점수 (서버에서 content fit이 없을 때)
+  const t = (job.title || "").toLowerCase();
+  const strongHits = ["ai", "llm", "tpm", "전략", "기획", "디지털", "데이터", "컨설팅", "플랫폼"].filter(k=>t.includes(k));
+  const weakHits = ["개발", "engineer", "frontend", "backend", "devops"].filter(k=>t.includes(k));
+  const score = Math.max(25, Math.min(90, 40 + strongHits.length * 10 - weakHits.length * 15));
+  return {
+    score,
+    verdict: score >= 65 ? "green" : score >= 45 ? "orange" : "red",
+    label: score >= 65 ? "✅ 적극지원 후보" : score >= 45 ? "🔶 검토 필요" : "❌ 낮음",
+  };
+}
+
+function filterDiscover(filter, btn) {
+  discoverFilter = filter;
+  document.querySelectorAll("#discover-results .filter-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  renderDiscoverList(filter);
+}
+
+function renderDiscoverList(filter) {
+  const el = document.getElementById("discover-list");
+  let items = discoverData;
+  if(filter !== "all") items = discoverData.filter(j => fitScore(j).verdict === filter);
+
+  if(!items.length) {
+    el.innerHTML = `<div style="text-align:center;padding:20px;color:#888;font-size:13px">해당 조건의 공고가 없습니다.</div>`;
+    return;
+  }
+
+  el.innerHTML = items.map((job, i) => {
+    const fit = fitScore(job);
+    const color = fit.verdict==="green"?"#27ae60":fit.verdict==="orange"?"#e67e22":"#e74c3c";
+    return `<div class="card ${fit.verdict}" style="padding:14px 16px;cursor:pointer" onclick="window.open('${job.url}','_blank')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;color:#888;margin-bottom:3px">
+            <span style="background:#f0f2f5;padding:2px 7px;border-radius:10px;font-weight:600">${job.site}</span>
+          </div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:6px;line-height:1.4">${job.title}</div>
+          <div style="font-size:11px;color:#8e44ad;font-weight:600">${fit.label}</div>
+        </div>
+        <div style="text-align:center;min-width:48px;margin-left:12px">
+          <div style="font-size:22px;font-weight:800;color:${color};line-height:1">${fit.score}</div>
+          <div style="font-size:10px;color:#aaa">/ 100</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:6px">
+        <button onclick="event.stopPropagation();crawlFromDiscover('${job.url}',this)"
+          style="padding:5px 11px;border-radius:5px;border:none;background:#e8f4fd;color:#0f3460;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">
+          📄 JD 상세 분석
+        </button>
+        <a href="${job.url}" target="_blank" onclick="event.stopPropagation()"
+          style="padding:5px 11px;border-radius:5px;border:1.5px solid #ddd;background:#fff;color:#555;font-size:11px;font-weight:600;text-decoration:none">
+          🔗 원문 보기
+        </a>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+async function crawlFromDiscover(url, btn) {
+  btn.textContent = "⏳ 분석 중...";
+  btn.style.background = "#aaa";
+  try {
+    const r = await fetch(`${API}/api/crawl`, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({url})
+    });
+    const d = await r.json();
+    if(d.error) throw new Error(d.error);
+
+    // 크롤러 탭으로 이동해서 결과 표시
+    document.getElementById("crawl-url").value = url;
+    document.getElementById("crawl-title").textContent = d.title || url;
+    document.getElementById("crawl-domain").textContent = `🌐 ${d.domain}`;
+    document.getElementById("crawl-length").textContent = `${(d.length||0).toLocaleString()}자`;
+    document.getElementById("crawl-text").value = d.content || "";
+
+    if(d.fit) {
+      const fit = d.fit;
+      const color = fit.verdict==="green"?"#27ae60":fit.verdict==="orange"?"#e67e22":"#e74c3c";
+      document.getElementById("quick-fit-result").innerHTML = `
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+          <div style="font-size:44px;font-weight:800;color:${color}">${fit.score}</div>
+          <div>
+            <div style="font-size:15px;font-weight:700;color:${color}">${fit.verdict==="green"?"✅ 적극 지원":fit.verdict==="orange"?"🔶 조건부":"❌ 비추천"}</div>
+            <div style="font-size:11px;color:#888">JD 전문 분석 기반</div>
+          </div>
+        </div>
+        ${fit.hits?.length ? `<div style="margin-bottom:6px"><span style="font-size:11px;font-weight:700;color:#27ae60">✅ 매칭 (${fit.hits.length})</span> <span style="font-size:12px;color:#555">${fit.hits.join(", ")}</span></div>` : ""}
+        ${fit.warns?.length ? `<div><span style="font-size:11px;font-weight:700;color:#e74c3c">⚠️ 주의 (${fit.warns.length})</span> <span style="font-size:12px;color:#555">${fit.warns.join(", ")}</span></div>` : ""}
+      `;
+      document.getElementById("quick-fit").style.display = "block";
+    }
+    document.getElementById("crawl-result").style.display = "block";
+    document.getElementById("crawl-error").style.display = "none";
+    showToast("✅ JD 분석 완료!", "ok");
+    btn.textContent = "📄 JD 상세 분석";
+    btn.style.background = "#e8f4fd";
+  } catch(e) {
+    btn.textContent = "📄 JD 상세 분석";
+    btn.style.background = "#e8f4fd";
+    showToast("❌ " + e.message, "err");
+  }
+}
+
+// ─── JD 크롤러 ───────────────────────────────────────────────
+const QUICK_URLS = [
+  {label:"잡코리아", hint:"jobkorea.co.kr/..."},
+  {label:"원티드", hint:"wanted.co.kr/..."},
+  {label:"사람인", hint:"saramin.co.kr/..."},
+  {label:"리멤버", hint:"rememberapp.co.kr/..."},
+  {label:"채널톡", hint:"recruit-event.channel.io/..."},
+];
+
+(function initCrawlerUI(){
+  const el = document.getElementById("quick-urls");
+  if(!el) return;
+  el.innerHTML = QUICK_URLS.map(u=>`
+    <button onclick="document.getElementById('crawl-url').placeholder='${u.hint}';document.getElementById('crawl-url').focus()"
+      style="padding:4px 10px;border-radius:14px;border:1.5px solid #ddd;background:#fff;font-size:11px;cursor:pointer;font-family:inherit;color:#555">
+      ${u.label}
+    </button>`).join("");
+})();
+
+let lastCrawlData = null;
+let lastCrawlDataInline = null;
+
+// ── 오늘의 공고 탭 · 인라인 크롤러 ──────────────────────────────
+async function startCrawlInline() {
+  const urlVal = document.getElementById("crawl-url-inline").value.trim();
+  if(!urlVal){ showToast("URL을 입력해 주세요.", "err"); return; }
+
+  document.getElementById("crawl-inline-result").style.display = "none";
+  document.getElementById("crawl-loading-inline").style.display = "block";
+
+  try {
+    const r = await fetch(`${API}/api/crawl`, {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({url: urlVal})
+    });
+    const d = await r.json();
+    document.getElementById("crawl-loading-inline").style.display = "none";
+
+    if(d.error) { showToast("❌ " + d.error, "err"); return; }
+
+    lastCrawlDataInline = d;
+    const fit = d.fit || {};
+    const color = fit.verdict==="green"?"#27ae60":fit.verdict==="orange"?"#e67e22":"#e74c3c";
+    document.getElementById("crawl-inline-title").textContent = d.title || urlVal;
+    document.getElementById("crawl-inline-score").innerHTML =
+      fit.score ? `<span style="color:${color}">${fit.score}점</span>` : "";
+    document.getElementById("crawl-text-inline").value = d.content || "";
+    document.getElementById("crawl-inline-result").style.display = "block";
+    showToast("✅ JD 추출 완료!", "ok");
+  } catch(e) {
+    document.getElementById("crawl-loading-inline").style.display = "none";
+    showToast("❌ 서버 오프라인 — job_tracker_server.py를 실행하세요.", "err");
+  }
+}
+
+function bookmarkCrawledInline() {
+  if(!lastCrawlDataInline) return;
+  const job = {
+    title: lastCrawlDataInline.title || lastCrawlDataInline.url,
+    company: "",
+    url: lastCrawlDataInline.url,
+    site: lastCrawlDataInline.domain || "직접입력",
+    score: lastCrawlDataInline.fit?.score || 0,
+    verdict: lastCrawlDataInline.fit?.verdict || "orange",
+    matched: lastCrawlDataInline.fit?.hits || [],
+  };
+  toggleBookmark(job);
+}
+
+function copyJDInline() {
+  const text = document.getElementById("crawl-text-inline").value;
+  navigator.clipboard.writeText(text).then(()=>showToast("📋 복사됐어요!", "ok")).catch(()=>showToast("복사 실패", "err"));
+}
+
+// ── JD 크롤러 탭 · 전체 크롤러 ──────────────────────────────────
+async function startCrawl() {
+  const urlVal = document.getElementById("crawl-url").value.trim();
+  if(!urlVal){ showToast("URL을 입력해 주세요.", "err"); return; }
+
+  document.getElementById("crawl-result").style.display = "none";
+  document.getElementById("crawl-error").style.display = "none";
+  document.getElementById("crawl-loading").style.display = "block";
+  document.getElementById("crawl-loading-url").textContent = urlVal;
+  const btn = document.getElementById("crawl-btn");
+  if(btn){ btn.textContent = "⏳ 분석 중..."; btn.disabled = true; }
+
+  try {
+    const r = await fetch(`${API}/api/crawl`, {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({url: urlVal})
+    });
+    const d = await r.json();
+    document.getElementById("crawl-loading").style.display = "none";
+
+    if(d.error) {
+      document.getElementById("crawl-error-msg").textContent = "❌ " + d.error;
+      document.getElementById("crawl-error").style.display = "block";
+      return;
+    }
+
+    lastCrawlData = d;
+    document.getElementById("crawl-title").textContent = d.title || urlVal;
+    document.getElementById("crawl-domain").textContent = `🌐 ${d.domain}`;
+    document.getElementById("crawl-length").textContent = `${(d.length||0).toLocaleString()}자`;
+    document.getElementById("crawl-text").value = d.content || "";
+
+    if(d.fit) {
+      const fit = d.fit;
+      const color = fit.verdict==="green"?"#27ae60":fit.verdict==="orange"?"#e67e22":"#e74c3c";
+      document.getElementById("quick-fit-result").innerHTML = `
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+          <div style="font-size:44px;font-weight:800;color:${color}">${fit.score}</div>
+          <div>
+            <div style="font-size:15px;font-weight:700;color:${color}">${fit.verdict==="green"?"✅ 적극 지원":fit.verdict==="orange"?"🔶 조건부":"❌ 비추천"}</div>
+            <div style="font-size:11px;color:#888">JD 전문 분석 기반</div>
+          </div>
+        </div>
+        ${fit.hits?.length ? `<div style="margin-bottom:6px"><span style="font-size:11px;font-weight:700;color:#27ae60">✅ 매칭 (${fit.hits.length})</span> <span style="font-size:12px;color:#555">${fit.hits.join(", ")}</span></div>` : ""}
+        ${fit.warns?.length ? `<div><span style="font-size:11px;font-weight:700;color:#e74c3c">⚠️ 주의 (${fit.warns.length})</span> <span style="font-size:12px;color:#555">${fit.warns.join(", ")}</span></div>` : ""}
+      `;
+      document.getElementById("quick-fit").style.display = "block";
+    }
+    document.getElementById("crawl-result").style.display = "block";
+    showToast("✅ JD 추출 완료!", "ok");
+  } catch(e) {
+    document.getElementById("crawl-loading").style.display = "none";
+    document.getElementById("crawl-error-msg").textContent = "❌ 서버 오프라인 — job_tracker_server.py를 실행하세요.";
+    document.getElementById("crawl-error").style.display = "block";
+  } finally {
+    if(btn){ btn.textContent = "🔍 크롤링"; btn.disabled = false; }
+  }
+}
+
+function bookmarkCrawled() {
+  if(!lastCrawlData) return;
+  const job = {
+    title: lastCrawlData.title || lastCrawlData.url,
+    company: "",
+    url: lastCrawlData.url,
+    site: lastCrawlData.domain || "직접입력",
+    score: lastCrawlData.fit?.score || 0,
+    verdict: lastCrawlData.fit?.verdict || "orange",
+    matched: lastCrawlData.fit?.hits || [],
+  };
+  toggleBookmark(job);
+}
+
+function copyJD() {
+  const text = document.getElementById("crawl-text").value;
+  navigator.clipboard.writeText(text).then(()=>showToast("📋 복사됐어요!", "ok")).catch(()=>showToast("복사 실패", "err"));
+}
+
+async function addToNotion() {
+  showToast("노션 메모 저장은 현재 비활성화되어 있습니다. 주목 공고에 추가하거나 JD를 복사해 주세요.", "err");
+}
+
+function doQuickFit() {
+  const jd = document.getElementById("crawl-text").value.toLowerCase();
+  if(!jd){ showToast("먼저 JD를 크롤링하세요.", "err"); return; }
+
+  // 이주영님 핵심 키워드 매칭
+  const profile = {
+    강점: ["ai", "llm", "gpt", "머신러닝", "machine learning", "컨설팅", "consulting", "전략", "strategy",
+           "tpm", "program manager", "기획", "roadmap", "stakeholder", "이해관계자", "poc", "파일럿",
+           "금융", "finance", "보험", "insurance", "데이터", "data", "python", "sql"],
+    주의: ["flutter", "react", "frontend", "java", "c++", "devops", "kubernetes", "ios", "android",
+           "게임", "게임개발", "hardware", "embedded"],
+  };
+
+  let hits = 0, warns = 0;
+  const hitWords = [], warnWords = [];
+  profile.강점.forEach(k=>{ if(jd.includes(k)){ hits++; hitWords.push(k); } });
+  profile.주의.forEach(k=>{ if(jd.includes(k)){ warns++; warnWords.push(k); } });
+
+  const total = profile.강점.length;
+  const score = Math.max(20, Math.min(95, Math.round((hits / total) * 100 + 20 - warns * 5)));
+  const verdict = score >= 70 ? "green" : score >= 50 ? "orange" : "red";
+  const label = verdict === "green" ? "✅ 적극 지원" : verdict === "orange" ? "🔶 조건부 지원" : "❌ 비추천";
+  const color = verdict === "green" ? "#27ae60" : verdict === "orange" ? "#e67e22" : "#e74c3c";
+
+  document.getElementById("quick-fit-result").innerHTML = `
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
+      <div style="font-size:44px;font-weight:800;color:${color};line-height:1">${score}</div>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:${color}">${label}</div>
+        <div style="font-size:12px;color:#888;margin-top:2px">키워드 매칭 기반 빠른 분석</div>
+      </div>
+    </div>
+    ${hitWords.length ? `<div style="margin-bottom:8px"><span style="font-size:11px;font-weight:700;color:#27ae60">✅ 매칭 키워드 (${hits}개):</span><br>
+      <span style="font-size:12px;color:#555">${hitWords.join(", ")}</span></div>` : ""}
+    ${warnWords.length ? `<div><span style="font-size:11px;font-weight:700;color:#e74c3c">⚠️ 주의 키워드 (${warns}개):</span><br>
+      <span style="font-size:12px;color:#555">${warnWords.join(", ")}</span></div>` : ""}
+    <div style="font-size:11px;color:#aaa;margin-top:10px">※ 정밀 분석은 에이전트에게 JD 전문을 붙여넣어 요청하세요.</div>
+  `;
+  document.getElementById("quick-fit").style.display = "block";
+  document.getElementById("fit-btn").textContent = "🔄 다시 분석";
+}
+
+// ─── 탭 전환 ─────────────────────────────────────────────────
+function showTab(id, el) {
+  if (!ACTIVE_TABS.has(id)) {
+    showToast("이 탭은 현재 비활성화되어 있습니다.", "err");
+    return;
+  }
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.getElementById("tab-"+id).classList.add("active");
+  if(el) el.classList.add("active");
+
+  if(id==="jobs" && allJobs.length===0 && notionConnected) loadJobs();
+  if(id==="daily" && dailyJobs.length===0) loadDailyJobs();
+}
+
+// ─── 필터 ────────────────────────────────────────────────────
+function filterJobs(filter, btn) {
+  document.querySelectorAll("#tab-jobs .filter-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  renderJobs(filter);
+}
+
+// ─── 토큰 설정 ───────────────────────────────────────────────
+function openSetup() { document.getElementById("setup-modal").classList.add("open"); }
+function closeSetup() { document.getElementById("setup-modal").classList.remove("open"); }
+
+async function submitToken() {
+  const token = document.getElementById("token-input").value.trim();
+  if(!token) return;
+  try {
+    await fetch(`${API}/api/token`, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({token})
+    });
+    closeSetup();
+    await checkStatus();
+    if(notionConnected) await loadJobs();
+  } catch(e) { showToast("❌ 서버에 연결할 수 없습니다.", "err"); }
+}
+
+// ─── 토스트 ──────────────────────────────────────────────────
+function showToast(msg, type="ok") {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  setTimeout(()=>el.className="toast", 3000);
+}
+
+// ─── 시작 ────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
